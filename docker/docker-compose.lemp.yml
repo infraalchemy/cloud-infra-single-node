@@ -1,0 +1,65 @@
+version: '3.8'
+#Installs and runs three docker containers in detached mode. 
+
+services:
+  nginx:
+    image: custom-nginx:1.21.4  # Use custom-built image
+    build: 
+      context: ./nginx
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx/pglearn.panglobal.org.conf:/etc/nginx/sites-available/pglearn.panglobal.org.conf
+      - ./html:/usr/share/nginx/html
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - php-fpm
+    networks:
+      - web_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+
+  php-fpm:
+    image: custom-php:8.3
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ./php:/var/www/html
+    networks:
+      - web_network
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+
+  mysql:
+    image: mysql:8.0
+    env_file:
+        - .env.sql         # This loads the environment variables
+    volumes:
+        - ./mysql/mysql-data:/var/lib/mysql                      # Persistent MySQL data
+        - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # SQL initialization script
+    networks:
+        - web_network
+    healthcheck:
+        test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+        interval: 30s 
+        retries: 3
+        start_period: 30s
+        timeout: 10s
+
+networks:
+    web_network:
+     #external: true   # This tells Docker to use the existing network on the host
+     driver: bridge  # This ensures all containers are on the same network
+
+volumes:
+    mysql_data:                                              # Define persistent storage for MySQL
