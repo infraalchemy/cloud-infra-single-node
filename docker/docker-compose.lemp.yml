@@ -2,14 +2,16 @@ version: '3.8'
 #Installs and runs three docker containers in detached mode. 
 
 services:
+  version: '3.8'
+
+services:
   nginx:
-    image: custom-nginx:1.21.4  # Use custom-built image
-    build: 
+    image: custom-nginx:1.21.4
+    build:
       context: ./nginx
       dockerfile: Dockerfile
     volumes:
-      - ./nginx/pglearn.panglobal.org.conf:/etc/nginx/sites-available/pglearn.panglobal.org.conf
-      - ./html:/usr/share/nginx/html
+      - ./php:/var/www/html
     ports:
       - "80:80"
       - "443:443"
@@ -31,6 +33,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./php:/var/www/html
+      - ./moodledata:/var/www/moodledata
     networks:
       - web_network
     healthcheck:
@@ -39,6 +42,11 @@ services:
       retries: 3
       start_period: 30s
       timeout: 10s
+
+networks:
+  web_network:
+    driver: bridge
+
 
   mysql:
     image: mysql:8.0
@@ -50,6 +58,10 @@ services:
         - web_network
     healthcheck:
         test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+        interval: 30s
+        retries: 3
+        start_period: 30s
+        timeout: 10s
 
 
 networks:
