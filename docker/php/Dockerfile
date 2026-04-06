@@ -7,11 +7,19 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
+    libzip-dev \
     zip \
     unzip \
     curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd xml pdo_mysql \
+    && docker-php-ext-install \
+        gd \
+        xml \
+        pdo_mysql \
+        mysqli \
+        zip \
+        intl \
+        opcache \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
