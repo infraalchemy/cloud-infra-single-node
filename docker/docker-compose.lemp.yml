@@ -46,15 +46,11 @@ services:
         - .env.sql         # This loads the environment variables
     volumes:
         - ./mysql/mysql-data:/var/lib/mysql                      # Persistent MySQL data
-        - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # SQL initialization script
     networks:
         - web_network
     healthcheck:
         test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-        interval: 30s 
-        retries: 3
-        start_period: 30s
-        timeout: 10s
+
 
 networks:
     web_network:

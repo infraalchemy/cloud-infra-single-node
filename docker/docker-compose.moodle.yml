@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  moodle:
+    build: ./moodle
+    container_name: moodle
+    restart: always
+    env_file:
+        - .env.moodle   # This will load the environment variables from the file
+    volumes:
+      - ./moodle/html:/var/www/html
+      - ./moodle/moodledata:/var/www/moodledata # This ensures that moodledata is mounted correctly
+    networks:
+      - web_network
+
+networks:
+  web_network:
+    #external: true   # This tells Docker to use the existing network on the host
+    driver: bridge  # This ensures all containers are on the same network
