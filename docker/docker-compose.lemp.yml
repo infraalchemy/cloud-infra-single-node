@@ -45,11 +45,11 @@ services:
 #        - web_network
 
 
-  networks:
+networks:
     web_network:
      #external: true   # This tells Docker to use the existing network on the host
      driver: bridge    # This ensures all containers are on the same network
 
-  volumes:
+volumes:
     mysql_data:
     moodledata:
