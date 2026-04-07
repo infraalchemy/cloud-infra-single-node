@@ -1,13 +1,9 @@
-version: '3.8'
 
 services:
   nginx:
-    image: custom-nginx:1.21.4
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    volumes:
-      - ./moodle/html:/var/www/html      # Serve Moodle code
     ports:
       - "80:80"
       - "443:443"
@@ -16,27 +12,23 @@ services:
     networks:
       - web_network
 
-
   php-fpm:
-    image: custom-php:8.3
     build:
       context: ./php
       dockerfile: Dockerfile
     volumes:
-      - ./moodle/html:/var/www/html             # Moodle code for PHP
-      - ./moodle/moodledata:/var/www/moodledata
+      - ./moodledata:/var/www/moodledata
     networks:
       - web_network
-
 
   mysql:
     image: mysql:8.0
     env_file:
-        - .env.sql         # This loads the environment variables
+      - .env
     volumes:
-        - ./mysql/mysql-data:/var/lib/mysql                      # Persistent MySQL data
+      - ./mysql/mysql-data:/var/lib/mysql
     networks:
-        - web_network
+      - web_network
 
   
 # Optional Moodle container (only if you want a separate Moodle service)
@@ -53,9 +45,11 @@ services:
 #        - web_network
 
 
-networks:
+  networks:
     web_network:
      #external: true   # This tells Docker to use the existing network on the host
      driver: bridge    # This ensures all containers are on the same network
 
-
+  volumes:
+    mysql_data:
+    moodledata:
