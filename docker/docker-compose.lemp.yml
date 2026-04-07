@@ -1,8 +1,4 @@
 version: '3.8'
-#Installs and runs three docker containers in detached mode. 
-
-services:
-  version: '3.8'
 
 services:
   nginx:
@@ -11,7 +7,7 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     volumes:
-      - ./php:/var/www/html
+      - ./moodle/html:/var/www/html      # Serve Moodle code
     ports:
       - "80:80"
       - "443:443"
@@ -19,12 +15,7 @@ services:
       - php-fpm
     networks:
       - web_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 30s
-      retries: 3
-      start_period: 30s
-      timeout: 10s
+
 
   php-fpm:
     image: custom-php:8.3
@@ -32,20 +23,10 @@ services:
       context: ./php
       dockerfile: Dockerfile
     volumes:
-      - ./php:/var/www/html
-      - ./moodledata:/var/www/moodledata
+      - ./moodle/html:/var/www/html             # Moodle code for PHP
+      - ./moodle/moodledata:/var/www/moodledata
     networks:
       - web_network
-    healthcheck:
-      test: ["CMD", "php", "-v"]
-      interval: 30s
-      retries: 3
-      start_period: 30s
-      timeout: 10s
-
-networks:
-  web_network:
-    driver: bridge
 
 
   mysql:
@@ -56,18 +37,25 @@ networks:
         - ./mysql/mysql-data:/var/lib/mysql                      # Persistent MySQL data
     networks:
         - web_network
-    healthcheck:
-        test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-        interval: 30s
-        retries: 3
-        start_period: 30s
-        timeout: 10s
+
+  
+# Optional Moodle container (only if you want a separate Moodle service)
+#  moodle:
+#    container_name: moodle
+#    build:
+#      context: ./moodle
+#      dockerfile: Dockerfile
+#    restart: always
+#    volumes:
+#        - ./moodle/html:/var/www/html
+#        - ./moodle/moodledata:/var/www/moodledata
+#    networks:
+#        - web_network
 
 
 networks:
     web_network:
      #external: true   # This tells Docker to use the existing network on the host
-     driver: bridge  # This ensures all containers are on the same network
+     driver: bridge    # This ensures all containers are on the same network
 
-volumes:
-    mysql_data:                                              # Define persistent storage for MySQL
+
