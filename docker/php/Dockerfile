@@ -1,12 +1,11 @@
 
 FROM php:8.3-fpm
 
-# Install dependencies and PHP extensions
-# Install dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
     curl \
+    ca-certificates \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
@@ -15,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libicu-dev \
     zip \
+    && update-ca-certificates \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         gd \
