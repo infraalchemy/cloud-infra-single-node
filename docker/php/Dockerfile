@@ -2,9 +2,28 @@
 FROM php:8.3-fpm
 
 # Install dependencies and PHP extensions
-RUN apt-get update && apt-get install -y git unzip curl libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libxml2-dev libzip-dev \
+# Install dependencies and PHP extensions
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    curl \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    libicu-dev \
+    zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd xml pdo_mysql mysqli zip intl opcache \
+    && docker-php-ext-install \
+        gd \
+        xml \
+        pdo_mysql \
+        mysqli \
+        zip \
+        intl \
+        opcache \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
