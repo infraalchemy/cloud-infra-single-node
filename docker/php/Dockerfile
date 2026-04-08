@@ -27,8 +27,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone Moodle into /var/www/html
-RUN git clone -b MOODLE_411_STABLE https://github.com/moodle/moodle.git /var/www/html
+# Copy Moodle into /var/www/html
+COPY ./moodle /var/www/html
 
 # Set permissions for Moodle data
 RUN mkdir -p /var/www/moodledata && chown -R www-data:www-data /var/www/moodledata /var/www/html
