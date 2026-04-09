@@ -4,6 +4,8 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
+    volumes:
+      - ./php/moodle:/var/www/html
     ports:
       - "80:80"
       - "443:443"
