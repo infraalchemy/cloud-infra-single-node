@@ -28,9 +28,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Clone Moodle into /var/www/html
-RUN mkdir -p /var/www/html \
-    && curl -L https://download.moodle.org/download.php/direct/stable411/moodle-latest-411.tgz \
-    | tar zx -C /var/www/html --strip-components=1
+RUN apt-get update && apt-get install -y curl ca-certificates \
+    && mkdir -p /var/www/html \
+    && curl -fL -o /tmp/moodle.tgz https://download.moodle.org/stable411/moodle-latest-411.tgz \
+    && tar -xzf /tmp/moodle.tgz -C /var/www/html --strip-components=1 \
+    && rm /tmp/moodle.tgz
 
 # Set permissions for Moodle data
 RUN mkdir -p /var/www/moodledata && chown -R www-data:www-data /var/www/moodledata /var/www/html
