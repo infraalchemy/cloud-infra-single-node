@@ -28,10 +28,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Clone Moodle into /var/www/html
-RUN mkdir -p /var/www/html \
+RUN apt-get update && apt-get install -y curl ca-certificates unzip \
+    && mkdir -p /tmp/moodle \
     && curl -fL -o /tmp/moodle.tgz https://download.moodle.org/download.php/direct/stable404/moodle-latest-404.tgz \
-    && tar -xzf /tmp/moodle.tgz -C /var/www/html --strip-components=1 \
-    && rm /tmp/moodle.tgz
+    && tar -xzf /tmp/moodle.tgz -C /tmp/moodle \
+    && mv /tmp/moodle/moodle/* /var/www/html/ \
+    && rm -rf /tmp/moodle /tmp/moodle.tgz
 
 # Set permissions for Moodle data
 RUN mkdir -p /var/www/moodledata && chown -R www-data:www-data /var/www/moodledata /var/www/html
