@@ -5,7 +5,7 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     volumes:
-      - ./php/moodle:/var/www/html
+      - moodle_code:/var/www/html        # 👈 same volume  
     ports:
       - "80:80"
       - "443:443"
@@ -19,6 +19,7 @@ services:
       context: ./php
       dockerfile: Dockerfile
     volumes:
+      - moodle_code:/var/www/html        # 👈 shared volume
       - ./moodledata:/var/www/moodledata
     networks:
       - web_network
