@@ -19,9 +19,12 @@ variable "zone" {
 variable "vm_name" {
   description = "Name of the VM"
   type        = string
-  default     = "docker-vm"
+  default     = "cloud-vm"
 }
 
+variable "disk_size_gb" {
+  default = 30
+}
 variable "machine_type" {
   description = "Machine type"
   type        = string

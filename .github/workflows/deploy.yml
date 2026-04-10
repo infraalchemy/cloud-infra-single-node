@@ -1,0 +1,47 @@
+name: CI-CD Deploy Moodle
+
+on:
+push:
+branches:
+- main
+
+jobs:
+build-and-deploy:
+runs-on: ubuntu-latest
+
+```
+steps:
+  # 1. Checkout
+  - name: Checkout repository
+    uses: actions/checkout@v4
+
+  # 2. Login to Docker Hub
+  - name: Login to Docker Hub
+    run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+
+  # 3. Build image
+  - name: Build image
+    run: |
+      docker build -t ${{ secrets.DOCKER_USER }}/moodle-app:latest ./docker/php
+
+  # 4. Push image
+  - name: Push image
+    run: |
+      docker push ${{ secrets.DOCKER_USER }}/moodle-app:latest
+
+  # 5. Deploy to VM
+  - name: Deploy to VM
+    uses: appleboy/ssh-action@v1.0.3
+    with:
+      host: ${{ secrets.VM_IP }}
+      username: ${{ secrets.VM_USER }}
+      key: ${{ secrets.VM_SSH_KEY }}
+      script: |
+        cd /home/${{ secrets.VM_USER }}/app
+
+        git pull origin main
+
+        docker compose pull
+        docker compose up -d
+```
+
