@@ -56,3 +56,4 @@ networks:
 volumes:
     mysql_data:
     moodledata:
+    moodle_code:  
