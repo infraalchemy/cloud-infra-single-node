@@ -1,0 +1,4 @@
+MYSQL_ROOT_PASSWORD=rootpassword
+MYSQL_DATABASE=moodle
+MYSQL_USER=moodleuser
+MYSQL_PASSWORD=yourpassword
