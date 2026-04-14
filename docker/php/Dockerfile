@@ -46,6 +46,11 @@ RUN mkdir -p /var/www/html \
 # Set permissions for Moodle data
 RUN mkdir -p /var/www/moodledata && chown -R www-data:www-data /var/www/moodledata /var/www/html
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+
 # Expose PHP-FPM port
 EXPOSE 9000
 
