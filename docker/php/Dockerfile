@@ -27,6 +27,16 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# PHP configuration for Moodle
+
+RUN { \
+  echo "max_input_vars=5000"; \
+  echo "upload_max_filesize=100M"; \
+  echo "post_max_size=100M"; \
+  echo "memory_limit=256M"; \
+} > /usr/local/etc/php/conf.d/moodle.in
+
+
 # Clone Moodle into /var/www/html
 RUN mkdir -p /var/www/html \
     && curl -fSL https://github.com/moodle/moodle/archive/refs/tags/v4.1.1.tar.gz -o moodle.tgz \
