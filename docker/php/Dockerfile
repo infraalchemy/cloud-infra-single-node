@@ -34,7 +34,7 @@ RUN { \
   echo "upload_max_filesize=100M"; \
   echo "post_max_size=100M"; \
   echo "memory_limit=256M"; \
-} > /usr/local/etc/php/conf.d/moodle.in
+} > /usr/local/etc/php/conf.d/moodle.ini
 
 
 # Clone Moodle into /var/www/html

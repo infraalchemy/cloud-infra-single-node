@@ -19,7 +19,7 @@ resource "google_compute_instance" "cloud_vm" {
   metadata_startup_script = <<-EOF
     #!/bin/bash
     apt update -y
-    apt install -y docker.io docker-compose
+    apt install -y docker.io
     systemctl enable docker
     systemctl start docker
     usermod -aG docker ubuntu
