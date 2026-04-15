@@ -1,4 +1,3 @@
-
 resource "google_compute_instance" "cloud_vm" {
   name         = var.vm_name
   machine_type = var.machine_type
@@ -14,15 +13,13 @@ resource "google_compute_instance" "cloud_vm" {
   network_interface {
     network = "default"
 
-    access_config {
-      # Ephemeral public IP
-    }
+    access_config {}
   }
 
   metadata_startup_script = <<-EOF
     #!/bin/bash
     apt update -y
-    apt install -y docker.io docker-compose-plugin git
+    apt install -y docker.io docker-compose
     systemctl enable docker
     systemctl start docker
     usermod -aG docker ubuntu
@@ -31,3 +28,16 @@ resource "google_compute_instance" "cloud_vm" {
   tags = ["http-server", "https-server"]
 }
 
+# Firewall
+resource "google_compute_firewall" "allow_http" {
+  name    = "allow-http"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["http-server"]
+}
