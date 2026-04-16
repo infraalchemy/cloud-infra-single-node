@@ -19,6 +19,7 @@ resource "google_compute_instance" "cloud_vm" {
 
   metadata_startup_script = <<-EOF
     #!/bin/bash
+    exec > /var/log/startup-script.log 2>&1
     apt update -y
     apt install -y docker.io
     systemctl enable docker
