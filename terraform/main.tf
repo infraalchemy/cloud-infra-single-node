@@ -16,7 +16,7 @@ resource "google_compute_instance" "cloud_vm" {
     access_config {}
   }
   
-  startup_script = file("startup.sh")
+  metadata_startup_script = file("startup.sh")
 
   tags = ["http-server", "https-server"]
 }
