@@ -20,11 +20,11 @@ resource "google_compute_instance" "cloud_vm" {
   metadata_startup_script = <<-EOF
     #!/bin/bash
     exec > /var/log/startup-script.log 2>&1
-    apt update -y
-    apt install -y docker.io
+    sudo apt update
+    sudo apt install -y docker-compose
     systemctl enable docker
     systemctl start docker
-    usermod -aG docker ubuntu
+    sudo usermod -aG docker $USER
   EOF
 
   tags = ["http-server", "https-server"]
