@@ -26,22 +26,38 @@ else
   sudo usermod -aG docker $USER
 fi
 
-# Go to project directory
-cd ~/cloud-infra-single-node/docker
+# =========================
+# CLONE / UPDATE REPO
+# =========================
 
-# Stop existing containers
+if [ ! -d "cloud-infra-single-node" ]; then
+  git clone https://github.com/infraalchemy/cloud-infra-single-node.git
+else
+  echo "Repo already exists, pulling latest changes..."
+  cd cloud-infra-single-node
+  git checkout feature
+  git pull
+  cd ..
+fi
+
+# Enter docker directory
+cd cloud-infra-single-node/docker
+
+# =========================
+# DEPLOY
+# =========================
+
 sudo docker-compose down || true
-
-# Rebuild images without cache
 sudo docker-compose build --no-cache
-
-# Start containers in detached mode
 sudo docker-compose up -d
 
 # Show running containers
 sudo docker ps
 
-# Optional health test for nginx container
+# =========================
+# HEALTH CHECK
+# =========================
+
 if sudo docker ps --format '{{.Names}}' | grep -q '^docker_nginx_1$'; then
   sudo docker exec docker_nginx_1 curl -f http://localhost || exit 1
 fi
