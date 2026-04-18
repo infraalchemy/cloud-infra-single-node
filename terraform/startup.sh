@@ -11,10 +11,15 @@ sudo apt install -y docker.io docker-compose git
 sudo systemctl enable docker
 sudo systemctl start docker
 
-# Clone repo (always fresh for automation)
+# Use known directory
+cd /opt
+
+# Fresh clone
+rm -rf cloud-infra-single-node
 git clone https://github.com/infraalchemy/cloud-infra-single-node.git
 
-cd cloud-infra-single-node/docker
+cd /opt/cloud-infra-single-node/docker
+
 
 # Deploy
 sudo docker-compose down || true
