@@ -20,6 +20,17 @@ git clone https://github.com/infraalchemy/cloud-infra-single-node.git
 
 cd /opt/cloud-infra-single-node/docker
 
+# Fetch secret from GCP
+MYSQL_ROOT_PASSWORD=$(gcloud secrets versions access latest \
+  --secret="mysql-root-password")
+
+# Create .env file
+cat <<EOF > .env
+MYSQL_DATABASE=moodle
+MYSQL_USER=moodleuser
+MYSQL_PASSWORD=$MYSQL_ROOT_PASSWORD
+MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+EOF
 
 # Deploy
 sudo docker-compose down || true
