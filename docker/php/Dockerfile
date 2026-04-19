@@ -24,8 +24,8 @@ RUN apt-get update && apt-get install -y \
         zip \
         intl \
         opcache \
-	soap \
         exif \
+	soap \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
