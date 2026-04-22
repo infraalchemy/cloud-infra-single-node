@@ -1,0 +1,50 @@
+# php deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php
+  template:
+    metadata:
+      labels:
+        app: php
+    spec:
+      initContainers:
+      - name: clone-moodle
+        image: alpine/git
+        command:
+          - sh
+          - -c
+          - git clone --depth=1 https://github.com/moodle/moodle.git /var/www/html
+        volumeMounts:
+        - name: moodle-code
+          mountPath: /var/www/html
+
+      containers:
+      - name: php
+        image: php:8.2-fpm
+        ports:
+        - containerPort: 9000
+        env:
+        - name: DB_HOST
+          value: mysql
+        - name: DB_NAME
+          value: moodle
+        - name: DB_USER
+          value: root
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: php-secret
+              key: db-password
+        volumeMounts:
+        - name: moodle-code
+          mountPath: /var/www/html
+
+      volumes:
+      - name: moodle-code
+        emptyDir: {}
