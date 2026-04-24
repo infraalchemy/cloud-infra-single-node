@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: moodle-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce   # (kind limitation, see note below)
+  resources:
+    requests:
+      storage: 1Gi

@@ -22,7 +22,13 @@ spec:
         - name: nginx-config
           mountPath: /etc/nginx/conf.d/default.conf
           subPath: default.conf
+        - name: moodle-code
+          mountPath: /var/www/html  
       volumes:
       - name: nginx-config
         configMap:
-          name: nginx-config    
+          name: nginx-config
+
+      - name: moodle-code
+        persistentVolumeClaim:
+          claimName: moodle-pvc    

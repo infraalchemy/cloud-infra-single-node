@@ -13,16 +13,6 @@ spec:
       labels:
         app: php
     spec:
-      initContainers:
-      - name: clone-moodle
-        image: alpine/git
-        command:
-          - sh
-          - -c
-          - git clone --depth=1 https://github.com/moodle/moodle.git /var/www/html
-        volumeMounts:
-        - name: moodle-code
-          mountPath: /var/www/html
 
       containers:
       - name: php
@@ -41,10 +31,12 @@ spec:
             secretKeyRef:
               name: php-secret
               key: db-password
+
         volumeMounts:
         - name: moodle-code
           mountPath: /var/www/html
 
       volumes:
       - name: moodle-code
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: moodle-pvc
