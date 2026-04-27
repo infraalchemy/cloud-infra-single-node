@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: moodle-init
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: git
+        image: alpine/git
+        command:
+          - sh
+          - -c
+          - |
+            rm -rf /data/* &&
+            git clone --depth=1 https://github.com/moodle/moodle.git /data
+        volumeMounts:
+        - name: moodle-code
+          mountPath: /data
+      volumes:
+      - name: moodle-code
+        persistentVolumeClaim:
+          claimName: moodle-pvc

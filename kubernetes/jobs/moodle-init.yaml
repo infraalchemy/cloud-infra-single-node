@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: moodle-init
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: init
+        image: alpine:3.19
+        command:
+          - sh
+          - -c
+          - |
+            apk add --no-cache wget unzip
+            cd /tmp
+            wget https://download.moodle.org/latest.zip
+            unzip latest.zip
+            cp -r moodle/* /data/
+        volumeMounts:
+        - name: moodle-code
+          mountPath: /data
+
+      volumes:
+      - name: moodle-code
+        persistentVolumeClaim:
+          claimName: moodle-pvc
