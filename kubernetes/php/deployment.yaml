@@ -35,8 +35,13 @@ spec:
         volumeMounts:
         - name: moodle-code
           mountPath: /var/www/html
+        - name: moodle-data
+          mountPath: /moodledata  
 
       volumes:
       - name: moodle-code
         persistentVolumeClaim:
           claimName: moodle-pvc
+      - name: moodle-data
+        persistentVolumeClaim:
+          claimName: moodledata-pvc
