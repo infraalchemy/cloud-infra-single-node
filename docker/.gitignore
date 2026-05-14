@@ -1,3 +1,2 @@
-*.env.sql
-*.env.moodle
-
+*.env
+.env
