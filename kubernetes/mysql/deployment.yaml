@@ -26,3 +26,9 @@ spec:
               key: password
         - name: MYSQL_DATABASE
           value: moodle
+        
+        - name: MYSQL_USER
+          value: moodleuser
+
+        - name: MYSQL_PASSWORD
+          value: rootpassword  
