@@ -14,3 +14,5 @@ kubernetes/secrets.yaml
 #General
 *.swp
 .DS_Store
+kind
+kind.exe
