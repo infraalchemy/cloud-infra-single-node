@@ -19,13 +19,14 @@ A production-grade DevOps repository demonstrating the containerization, orchest
 ├── Dockerfile                   # Multi-stage blueprint compiling Moodle core and PHP dependencies
 ├── kubernetes/                  # Kubernetes manifests for application deployment
 │   ├── base/                    # Core application manifests shared across all environments
+│   │   ├── infrastructure/      # Core cluster configuration, routing templates, and base ingress
 │   │   ├── jobs/                # Moodle cron engine and database migration tasks
 │   │   ├── mysql/               # MySQL StatefulSet and database configurations
 │   │   ├── nginx/               # Nginx reverse proxy deployment and server blocks
 │   │   ├── php/                 # PHP-FPM deployment and application configurations
 │   │   └── storage/             # Persistent Volume Claims for moodledata
 │   └── overlays/                # Environment-specific overrides (Kustomize)
-│       ├── local-kind/          # Local cluster tweaks (NodePorts, local storage classes)
+│       ├── local-kind/          # Local cluster tweaks (NodePorts, local storage classes, kind-config.yaml)
 │       └── prod-gcp/            # GCP GKE configurations (Cloud Load Balancer, persistent cloud disks)
 └── terraform/                   # Infrastructure as Code (IaC) for Google Cloud
     ├── modules/                 # Reusable, isolated infrastructure blocks
@@ -92,4 +93,5 @@ Deploy the core workloads while dynamically swapping local shortcuts for product
 ```bash
 kubectl apply -k kubernetes/overlays/prod-gcp/
 ```
+
 
