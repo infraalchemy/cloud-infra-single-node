@@ -14,12 +14,16 @@ A production-grade DevOps repository demonstrating the containerization, orchest
 ## 📂 Repository Structure
 
 ```text
-├── .github/             # GitHub Actions workflows for CI/CD automation
-├── docker/              # Nginx server blocks, PHP-FPM tuning, and environment configs
-├── kubernetes/          # K8s manifests (Deployments, StatefulSets, Ingress, and KinD configs)
-├── terraform/           # IaC modules for cloud compute, networking, and storage components
-├── Dockerfile           # Multi-stage blueprint compiling Moodle core and PHP dependencies
-└── README.md            # Architecture overview and deployment guide
+├── kubernetes/                  # Kubernetes manifests for local cluster deployment
+│   ├── infrastructure/          # Core cluster configuration and routing
+│   │   ├── ingress.yaml         # Ingress controller routing rules
+│   │   └── kind-config.yaml     # KinD multi-node local cluster configuration
+│   ├── storage/                 # Persistent Volume (PV) and Claims (PVC) for moodledata
+│   ├── mysql/                   # MySQL StatefulSet and database initialization scripts
+│   ├── php/                     # PHP-FPM application Deployment and ConfigMaps
+│   ├── nginx/                   # Nginx reverse proxy Deployment and Server Blocks
+│   └── jobs/                    # Kubernetes Jobs for database migrations and Moodle cron tasks
+
 ```
 
 ---
