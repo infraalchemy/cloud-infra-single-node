@@ -1,22 +1,24 @@
+# General / OS
+*.swp
+.DS_Store
 
-#Terraform
+# Local Binaries
+kind
+kind.exe
+
+# Docker
+docker/node_modules/
+docker/*.log
+
+# Kubernetes
+kubernetes/php/*secret*.yaml
+kubernetes/nginx/*secret*.yml
+kubernetes/mysql/*secret*.yml
+
+# Terraform
 terraform/.terraform/
 terraform/*.tfvars
 terraform/*.tfvars.json
 terraform/*.tfstate
 terraform/*.tfstate.backup
 
-#Docker
-docker/node_modules/
-docker/*.log
-
-#Kubernetes
-kubernetes/php/secrets.yaml
-kubernetes/nginx/secrets.yml
-kubernetes/mysql/secrets.yml
-
-#General
-*.swp
-.DS_Store
-kind
-kind.exe
