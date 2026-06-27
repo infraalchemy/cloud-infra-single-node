@@ -5,6 +5,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: nginx  # Added this line to fix the routing block
   rules:
   - http:
       paths:
@@ -12,7 +13,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: nginx  # 👈 This must match the service name inside kubernetes/nginx/
+            name: nginx
             port:
               number: 80
-
