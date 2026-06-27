@@ -4,8 +4,11 @@ metadata:
   name: moodle-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    # Crucial additions: Disables SSL redirects so HTTP works locally
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
 spec:
-  ingressClassName: nginx  # Added this line to fix the routing block
+  ingressClassName: nginx
   rules:
   - http:
       paths:
