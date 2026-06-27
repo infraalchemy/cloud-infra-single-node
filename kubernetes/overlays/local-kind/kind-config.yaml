@@ -3,7 +3,6 @@ apiVersion: kind.x-k8s.io/v1alpha4
 name: lab
 nodes:
 - role: control-plane
-  # DO NOT LOSE THIS PATCH SECTION:
   kubeadmConfigPatches:
   - |
     kind: InitConfiguration
@@ -12,7 +11,9 @@ nodes:
         node-labels: "ingress-ready=true"
   extraPortMappings:
   - containerPort: 80
-    hostPort: 8080
+    hostPort: 80         # Fixed: Changed from 8080 to 80
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 443        # Added: Missing secure routing port
     protocol: TCP
 - role: worker
-
