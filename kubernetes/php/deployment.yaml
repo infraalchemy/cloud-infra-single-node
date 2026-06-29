@@ -34,7 +34,7 @@ spec:
                 cp -a moodle/. .
 
               fi
- 
+
               chown -R 33:33 /var/www/html
               chown -R 33:33 /moodledata
 
@@ -42,9 +42,9 @@ spec:
           volumeMounts:
             - name: moodle-code
               mountPath: /var/www/html
-            
+
             - name: moodle-data
-              mountPath: /moodledata  
+              mountPath: /moodledata
 
       containers:
       - name: php
