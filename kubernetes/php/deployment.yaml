@@ -1,5 +1,4 @@
 # php deployment
-# moodle init container
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,14 +8,12 @@ spec:
   selector:
     matchLabels:
       app: php
-
   template:
     metadata:
       labels:
         app: php
-
     spec:
-      initContainers:   # ADD THIS HERE (same level as containers)
+      initContainers:
         - name: init-moodle
           image: alpine:3.19
           command:
@@ -25,27 +22,19 @@ spec:
             - |
               set -e
               apk add --no-cache wget tar
-
               cd /var/www/html
-
               if [ ! -f index.php ]; then
-                wget -O moodle.tgz https://download.moodle.org/download.php/direct/stable404/moodle-latest-404.tgz
+                wget -O moodle.tgz https://moodle.org
                 tar -xzf moodle.tgz
                 cp -a moodle/. .
-
               fi
-
               chown -R 33:33 /var/www/html
               chown -R 33:33 /moodledata
-
-
           volumeMounts:
             - name: moodle-code
               mountPath: /var/www/html
-
             - name: moodle-data
               mountPath: /moodledata
-
       containers:
       - name: php
         image: extn-php:8.2
@@ -64,19 +53,16 @@ spec:
             secretKeyRef:
               name: php-secret
               key: db-password
-
         volumeMounts:
         - name: moodle-code
           mountPath: /var/www/html
-
         - name: moodle-data
           mountPath: /moodledata
-
       volumes:
       - name: moodle-code
         persistentVolumeClaim:
           claimName: moodle-pvc
-
       - name: moodle-data
         persistentVolumeClaim:
-          claimName: moodledata-pvc 
+          claimName: moodledata-pvc
+

@@ -14,6 +14,6 @@ nodes:
     hostPort: 80         # Fixed: Changed from 8080 to 80
     protocol: TCP
   - containerPort: 443
-    hostPort: 443        # Added: Missing secure routing port
+    hostPort: 8443        # Fixed: Missing secure routing port and change to 8443 because K8 is using 443
     protocol: TCP
 - role: worker
