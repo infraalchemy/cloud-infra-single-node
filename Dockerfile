@@ -26,4 +26,7 @@ RUN docker-php-ext-install \
     soap
 
 # Set proper permissions (safe default for Moodle)
-RUN chown -R www-data:www-data /var/www/html   
+RUN chown -R www-data:www-data /var/www/html
+
+# TO UNBLOCK THE NETWORK INTERFACE NATIVELY
+RUN sed -i 's/listen = 127.0.0.1:9000/listen = 9000/g' /usr/local/etc/php-fpm.d/www.conf

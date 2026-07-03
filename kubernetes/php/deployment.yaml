@@ -24,7 +24,8 @@ spec:
               apk add --no-cache wget tar
               cd /var/www/html
               if [ ! -f index.php ]; then
-                wget -O moodle.tgz https://moodle.org
+                 # FIXED: Uses the explicit direct tarball url with redirect forcing flags
+                wget --max-redirect=5 -O moodle.tgz "https://moodle.org"
                 tar -xzf moodle.tgz
                 cp -a moodle/. .
               fi
@@ -65,4 +66,3 @@ spec:
       - name: moodle-data
         persistentVolumeClaim:
           claimName: moodledata-pvc
-
