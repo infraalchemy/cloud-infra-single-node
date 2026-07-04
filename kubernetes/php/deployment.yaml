@@ -25,7 +25,7 @@ spec:
               cd /var/www/html
               if [ ! -f index.php ]; then
                  # FIXED: Uses the explicit direct tarball url with redirect forcing flags
-                wget --max-redirect=5 -O moodle.tgz "https://moodle.org"
+                wget --max-redirect=5 -O moodle.tgz "https://download.moodle.org/download.php/direct/stable404/moodle-latest-404.tgz"
                 tar -xzf moodle.tgz
                 cp -a moodle/. .
               fi

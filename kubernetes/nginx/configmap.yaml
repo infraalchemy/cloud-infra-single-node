@@ -19,6 +19,10 @@ data:
             fastcgi_split_path_info ^(.+\.php)(/.+)$;
 
             fastcgi_pass php:9000;
+            
+            # TWO TIMEOUT LINES 
+            fastcgi_read_timeout 600s;
+            fastcgi_send_timeout 600s;
 
             fastcgi_index index.php;
 
