@@ -1,106 +1,179 @@
-Moodle Infrastructure Project
-Overview
+# Enterprise Moodle Infrastructure Project
 
-This project shows the progression of running the same application (Moodle) across three environments:
+## Overview
 
-Docker Compose (initial setup at work)
-Kubernetes using Kind (local Windows 11 environment)
-Google Cloud Platform (planned deployment)
+This project documents my progression from Docker-based deployments to Kubernetes and, eventually, cloud infrastructure.
 
-The goal wasn’t just to get Moodle running, but to understand how infrastructure changes as you move from local containers → orchestration → cloud.
+The goal is to build and understand a complete Moodle deployment while learning how modern DevOps tools work together. Rather than building isolated labs, I chose to evolve the same application through multiple deployment models, solving real infrastructure problems along the way.
 
-Architecture
+Current project progression:
 
-High-level flow of the current Kubernetes setup:
+- Docker Compose
+- Kubernetes (Kind on Windows 11)
+- Google Cloud Platform (planned)
 
-Browser
-   ↓
-Ingress Controller (NGINX)
-   ↓
-Kubernetes Service
-   ↓
-PHP-FPM Pod
-   ↓
-Moodle Application Container
-   ↓
-Persistent Volume (storage)
+---
 
-Local environment runs on Windows 11 using Kind + Docker Desktop.
+## Project Goals
 
-Project Phases
-Phase 1 – Docker Compose (PaNGlobal)
+- Deploy Moodle using containers
+- Learn Kubernetes by building a complete multi-tier application
+- Automate infrastructure using Terraform
+- Deploy the same application in Google Cloud
+- Build a repeatable environment that can be recreated from source
 
-Initial deployment using Docker Compose in a work environment.
+---
 
-Focused on:
+## Current Architecture
 
-containerizing Moodle
-PHP + NGINX setup
-volumes and persistence
-basic service networking
+```
+                 Browser
+                    │
+                    ▼
+        NGINX Ingress Controller
+                    │
+                    ▼
+          Kubernetes Service
+                    │
+                    ▼
+             PHP-FPM / Moodle
+                    │
+          ┌─────────┴─────────┐
+          ▼                   ▼
+      MySQL             Persistent Storage
+```
+
+Current environment
+
+- Windows 11
+- Docker Desktop
+- Kind (Kubernetes in Docker)
+- NGINX Ingress
+- PHP-FPM
+- Moodle
+- MySQL
+- Persistent Volumes
+
+---
+
+# Project Progression
+
+## Phase 1 – Docker Compose
+
+This project originally began as a Docker Compose deployment.
+
+This phase focused on:
+
+- building container images
+- configuring PHP and NGINX
+- multi-container networking
+- persistent storage
+- managing application configuration
 
 This provided the foundation for the Kubernetes migration.
 
-Phase 2 – Kubernetes (Kind on Windows 11)
+---
 
-Rebuilt the same system using Kubernetes locally.
+## Phase 2 – Kubernetes (Current)
 
-Stack:
+The Docker deployment is being migrated into Kubernetes using Kind running locally on Windows 11.
 
-Windows 11 host
-Docker Desktop
-Kind cluster
-NGINX Ingress Controller
-PHP-FPM + Moodle pods
-persistent volumes
+Current implementation includes:
 
-This phase introduced real orchestration challenges and multi-layer debugging across Kubernetes, containers, and the Windows host environment.
+- Kubernetes Deployments
+- Services
+- Ingress
+- Persistent Volumes
+- Secrets
+- ConfigMaps
+- MySQL
+- Moodle
+- PHP-FPM
+- NGINX
 
-👉 Full troubleshooting details are in: /docs/kind-troubleshooting.md
+Running locally has also exposed a number of Windows, Docker and Kubernetes integration issues that required troubleshooting.
 
-Phase 3 – Google Cloud Platform (Planned)
+See:
 
-Next step is deploying the same system into a cloud environment using GCP.
+- `/docs/kind-troubleshooting.md`
 
-Focus will include:
+---
 
-Compute Engine VM setup
-Docker deployment on Linux
-firewall + networking configuration
-running outside local Kubernetes
-How to Run (Kind – Local Kubernetes)
-1. Create cluster
-kind create cluster --config kind-config.yaml --name lab
-2. Build image
-docker build -t moodle-custom:latest .
-3. Load image into cluster
-kind load docker-image moodle-custom:latest --name lab
-4. Deploy ingress
-kubectl apply -f ingress-nginx.yaml
-5. Deploy application
-kubectl apply -f k8s/
-6. Verify deployment
-kubectl get pods
-kubectl get svc
-kubectl get ingress
-Troubleshooting & Deep Dive
+## Phase 3 – Google Cloud Platform (Planned)
 
-All detailed issues and fixes are documented separately:
+The next stage is deploying the same application into Google Cloud.
 
-/docs/kind-troubleshooting.md – real Kubernetes + Windows + networking issues
-/docs/architecture.md – deeper explanation of system design and components
-Result
+Planned work includes:
 
-A fully working Moodle deployment running locally on a Kubernetes (Kind) cluster, accessible through Ingress, with working storage, networking, and application configuration.
+- Compute Engine
+- Terraform
+- Kubernetes
+- GitHub Actions
+- OIDC authentication
+- automated deployments
 
-The environment can be fully destroyed and recreated using the steps above.
+---
 
-Notes
+# Repository Structure
 
-This project was built in phases to understand infrastructure progression:
+```
+.github/
+docker/
+kubernetes/
+terraform/
+docs/
+```
 
-Docker Compose → Kubernetes (Kind) → Google Cloud
+Each directory represents one part of the deployment pipeline, from local development through cloud infrastructure.
 
-Each phase builds on the previous one and introduces more realistic infrastructure challenges.
+---
 
-The main focus was not just deployment, but understanding how systems behave and fail across different layers of abstraction.
+# Running Locally
+
+Create the cluster
+
+```bash
+kind create cluster --config kubernetes/overlays/local-kind/kind-config.yaml
+```
+
+Deploy the application
+
+```bash
+kubectl apply -k kubernetes/overlays/local-kind/
+```
+
+Additional build and deployment commands are documented in:
+
+```
+docs/commands.md
+```
+
+---
+
+# Documentation
+
+Additional documentation is kept separate to keep the README focused.
+
+- docs/kind-troubleshooting.md
+- docs/architecture.md
+- docs/commands.md
+
+---
+
+# Future Work
+
+- Complete Google Cloud deployment
+- Expand Terraform modules
+- Complete GitHub Actions deployment pipeline
+- Improve monitoring and logging
+- Expand CI/CD automation
+
+---
+
+## What I Learned
+
+This project has become much more than simply deploying Moodle.
+
+It has helped me understand how Docker, Kubernetes, networking, storage, ingress, infrastructure as code, and cloud services work together. More importantly, it has provided experience troubleshooting issues across multiple layers of the stack rather than simply following tutorials.rnetes Services
+* Secrets and configuration management
+* Future CI/CD enhancements was not just deployment, but understanding how systems behave and fail across different layers of abstraction.
