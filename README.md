@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Moodle Infrastructure Project
 
 Docker • Kubernetes • Terraform • Google Cloud
@@ -40,8 +39,8 @@ I chose Moodle because it is a stateful, multi-tier application that exercises n
 
 * **[Verification & Testing Runbook](./post_mortem.md)**  
   Technical challenges encountered during development, including Kubernetes networking, ingress routing, container communication, storage issues, and the solutions implemented.
+---
 
-=======
 # Enterprise Moodle Infrastructure Project
 
 ## Overview
@@ -113,11 +112,10 @@ This phase focused on:
 - multi-container networking
 - persistent storage
 - managing application configuration
->>>>>>> cb3be22c5466ce4698ce1fa65f61ea40b0caf557
+
 
 ## Project Progression
 
-<<<<<<< HEAD
 This project follows the evolution of the same Moodle application through increasing levels of infrastructure complexity.
 
 ## Phase 1 – Containerized Deployment
@@ -199,7 +197,7 @@ Move the validated Kubernetes architecture into Google Cloud using managed Kuber
 * Automated deployments through GitHub Actions
 
 The goal is to continue evolving the local Kubernetes deployment into a repeatable cloud deployment pipeline.
-=======
+
 ---
 
 ## Phase 2 – Kubernetes (Current)
@@ -322,4 +320,3 @@ This project has become much more than simply deploying Moodle.
 It has helped me understand how Docker, Kubernetes, networking, storage, ingress, infrastructure as code, and cloud services work together. More importantly, it has provided experience troubleshooting issues across multiple layers of the stack rather than simply following tutorials.rnetes Services
 * Secrets and configuration management
 * Future CI/CD enhancements was not just deployment, but understanding how systems behave and fail across different layers of abstraction.
->>>>>>> cb3be22c5466ce4698ce1fa65f61ea40b0caf557
