@@ -51,8 +51,14 @@ I chose Moodle because it is a stateful, multi-tier application that exercises n
 
 To keep the repository clean and easy to navigate, I have broken the technical operational details down into three dedicated engineering logs:
 
-* 📄 **[Deployment Guide](./DEPLOYMENT.md)**: The step-by-step commands used to spin up the local cluster, compile images, and launch the application stacks.
-* 📄 **[Troubleshooting Post-Mortem](./POST_MORTEM.md)**: A detailed, root-cause log of the real-world network blocks, port conflicts, and scheduler bugs I ran into, along with the exact fixes for each.
+* 📄 **[P1 Deployment Guide](./P1_DEPLOYMENT.md)** (Docker Compose / GCP VM): Build and deploy the containerized Moodle environment.
+* 📄 **[P1 Post-Mortem](./P1_POST_MORTEM.md)** (Docker Compose / GCP VM): Troubleshooting and lessons learned from the cloud container deployment.
+
+* 📄 **[P2 Deployment Guide](./P2_DEPLOYMENT.md)** (Kubernetes / KinD): Deploy the Moodle stack into the local Kubernetes environment.
+* 📄 **[P2 Post-Mortem](./P2_POST_MORTEM.md)** (Kubernetes / KinD): Troubleshooting Kubernetes networking, ingress, storage, and scheduling issues.
+
+* 📄 **[P3 Deployment Guide](./P3_DEPLOYMENT.md)** (Future GCP Automation): Planned cloud automation improvements.
+* 📄 **[P3 Post-Mortem](./P3_POST_MORTEM.md)** (Future GCP Automation): Reserved for future deployment learnings.
 
 ---
 
@@ -92,7 +98,7 @@ Created a working containerized Moodle environment. Engineered private, isolated
 
 ## Phase 2 – Local Cluster Orchestration & Debugging (Kubernetes with KinD)
 ### Goal
-Migrate the Docker-based Moodle deployment into a local kinD Kubernetes cluster to implement and validate container orchestration, networking, ingress routing, storage, and application deployment workflows before moving to the cloud.
+Migrate the Docker-based Moodle deployment into a local KinD Kubernetes cluster to implement and validate container orchestration, networking, ingress routing, storage, and application deployment workflows before moving to the cloud.
 ### Architecture & Implementation
 The Docker-based Moodle deployment was migrated into Kubernetes by combining custom container images with declarative Kubernetes objects (Deployments, ClusterIP Services, Persistent Volume Claims, Secrets, ConfigMaps, initContainers, and Ingress routing rules). 
 ### Results & Skills Mastered
