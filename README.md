@@ -51,14 +51,14 @@ I chose Moodle because it is a stateful, multi-tier application that exercises n
 
 To keep the repository clean and easy to navigate, I have broken the technical operational details down into three dedicated engineering logs:
 
-* 📄 **[P1 Deployment Guide](./P1_DEPLOYMENT.md)** (Docker Compose / GCP VM): Build and deploy the containerized Moodle environment.
-* 📄 **[P1 Post-Mortem](./P1_POST_MORTEM.md)** (Docker Compose / GCP VM): Troubleshooting and lessons learned from the cloud container deployment.
+* 📄 **[P1 Deployment Guide](./p1_deployment.md)** (Docker Compose / GCP VM): Build and deploy the containerized Moodle environment.
+* 📄 **[P1 Post-Mortem](./p1_post_mortem.md)** (Docker Compose / GCP VM): Troubleshooting and lessons learned from the cloud container deployment.
 
-* 📄 **[P2 Deployment Guide](./P2_DEPLOYMENT.md)** (Kubernetes / KinD): Deploy the Moodle stack into the local Kubernetes environment.
-* 📄 **[P2 Post-Mortem](./P2_POST_MORTEM.md)** (Kubernetes / KinD): Troubleshooting Kubernetes networking, ingress, storage, and scheduling issues.
+* 📄 **[P2 Deployment Guide](./p2_deployment.md)** (Kubernetes / KinD): Deploy the Moodle stack into the local Kubernetes environment.
+* 📄 **[P2 Post-Mortem](./p2_post_mortem.md)** (Kubernetes / KinD): Troubleshooting Kubernetes networking, ingress, storage, and scheduling issues.
 
-* 📄 **[P3 Deployment Guide](./P3_DEPLOYMENT.md)** (Future GCP Automation): Planned cloud automation improvements.
-* 📄 **[P3 Post-Mortem](./P3_POST_MORTEM.md)** (Future GCP Automation): Reserved for future deployment learnings.
+* 📄 **[P3 Deployment Guide](./p3_deployment.md)** (Future GCP Automation): Planned cloud automation improvements.
+* 📄 **[P3 Post-Mortem](./p3_post_mortem.md)** (Future GCP Automation): Reserved for future deployment learnings.
 
 ---
 
