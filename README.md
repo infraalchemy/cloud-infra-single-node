@@ -23,29 +23,21 @@ I chose Moodle because it is a stateful, multi-tier application that exercises n
 │   │
 │   ├── mysql/                   # MySQL database deployment
 │   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   └── secret.yaml
-│   │
+│   │   └── service.yaml
 │   ├── nginx/                   # Nginx reverse proxy deployment
 │   │   ├── configmap.yaml
 │   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   └── secret.yaml
-│   │
+│   │   └── service.yaml 
 │   ├── php/                     # PHP-FPM Moodle application deployment
 │   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   └── secret.yaml
-│   │
+│   │   └── service.yaml
 │   ├── storage/                 # Persistent Moodle storage
 │   │   └── moodle-storage.yaml
-│   │
 │   └── overlays/                # Environment-specific configuration
 │       ├── local-kind/          # Local KinD Kubernetes environment
 │       │   ├── ingress.yaml
 │       │   ├── kind-config.yaml
 │       │   └── kustomization.yaml
-│       │
 │       └── prod-gcp/            # Planned GKE deployment
 └── terraform/                   # Google Cloud infrastructure automation
 ```
