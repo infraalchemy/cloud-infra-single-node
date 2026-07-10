@@ -23,31 +23,29 @@ I chose Moodle because it is a stateful, multi-tier application that exercises n
 │   │
 │   ├── mysql/                   # MySQL database deployment
 │   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   └── secret.yaml
-│   │
+│   │   └── service.yaml
 │   ├── nginx/                   # Nginx reverse proxy deployment
 │   │   ├── configmap.yaml
 │   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   └── secret.yaml
-│   │
+│   │   └── service.yaml 
 │   ├── php/                     # PHP-FPM Moodle application deployment
 │   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   └── secret.yaml
-│   │
+│   │   └── service.yaml
 │   ├── storage/                 # Persistent Moodle storage
 │   │   └── moodle-storage.yaml
-│   │
 │   └── overlays/                # Environment-specific configuration
 │       ├── local-kind/          # Local KinD Kubernetes environment
 │       │   ├── ingress.yaml
 │       │   ├── kind-config.yaml
 │       │   └── kustomization.yaml
-│       │
 │       └── prod-gcp/            # Planned GKE deployment
-└── terraform/                   # Google Cloud infrastructure automation
+└── terraform/                   # Google Cloud infrastructure automation└── terraform/       # Infrastructure as Code (IaC) for Google Cloud
+    ├── modules/                 # Reusable, isolated infrastructure blocks
+    │   ├── gke/                 # Google Kubernetes Engine cluster and node pool definitions
+    │   └── vpc/                 # Google Cloud VPC networking, subnets, and NAT gateways
+    ├── main.tf                  # Root module invoking VPC and GKE architectures
+    ├── outputs.tf               # Infrastructure outputs (GKE endpoints, kubeconfig tokens)
+    └── variables.tf             # Input variables (GCP Project ID, region, machine types)
 ```
 
 ## Project Documentation
