@@ -6,13 +6,13 @@ This document contains the step-by-step commands used to build, deploy, verify, 
 
 # Prerequisites
 
-This project deploys a local Kubernetes environment using Kind.
+This project deploys a local Kubernetes environment using KinD.
 
 Required software:
 
 - Windows host
 - Docker Desktop with WSL2 backend enabled
-- Kind
+- KinD
 - kubectl
 - Git
 
@@ -31,7 +31,7 @@ git --version
 
 The deployment follows this sequence:
 
-1. Create Kind cluster
+1. Create KinD cluster
 2. Deploy persistent storage
 3. Deploy MySQL database
 4. Build and deploy custom PHP/Moodle application image
@@ -42,7 +42,7 @@ The deployment follows this sequence:
 
 ---
 
-# Kind Cluster Lifecycle Management
+# KinD Cluster Lifecycle Management
 
 ## Delete Existing Cluster
 
@@ -58,7 +58,7 @@ Verify the cluster has been removed:
 kind get clusters
 ```
 
-Optional check for leftover Kind containers:
+Optional check for leftover KinD containers:
 
 ```bash
 docker ps -a | grep kind
@@ -68,7 +68,7 @@ docker ps -a | grep kind
 
 ## Create Cluster and Configure Context
 
-Create the local Kind cluster:
+Create the local KinD cluster:
 
 ```bash
 kind create cluster \
@@ -154,7 +154,7 @@ Build the custom image:
 docker build -t extn-php:8.2 .
 ```
 
-Load the image into the Kind cluster:
+Load the image into the KinD cluster:
 
 ```bash
 kind load docker-image extn-php:8.2 --name lab
