@@ -45,9 +45,15 @@ fastcgi_send_timeout 600s;
 
 ## 4. The Isolated Container Network Lock (PHP-FPM Topology)
 
-* **The Problem:** Inbound web traffic successfully reached the Nginx frontend but failed when forwarding requests to PHP-FPM. Investigation showed the PHP image defaulted to a local-only listener (`listen = 127.0.0.1:9000`), preventing communication from the separate Nginx container running in another Kubernetes pod.
 
-* **The Fix:** I tested patching the PHP-FPM listener through Kubernetes runtime commands. This approach replaced the container's native startup behavior and affected the image lifecycle. I then moved the configuration change into the Docker build process by adding a `sed` instruction directly into the `Dockerfile` to configure PHP-FPM to listen on `9000`.
+* **The Problem:** Nginx successfully received web traffic, but PHP requests failed when forwarding to PHP-FPM. Investigation showed PHP-FPM was configured to listen only on `127.0.0.1:9000`. Since Nginx and PHP-FPM run in separate containers, PHP-FPM was not reachable through the container network.
+
+* **The Fix:** I validated the issue by modifying the PHP-FPM listener at runtime. After confirming the root cause, I moved the configuration change into the Docker build process so the PHP-FPM network configuration was applied consistently during image creation.
+
+```dockerfile
+# Configure PHP-FPM for container network communication
+RUN sed -i 's/listen = 127.0.0.1:9000/listen = 9000/g' /usr/local/etc/php-fpm.d/www.conf
+```
 
 ---
 
@@ -55,7 +61,12 @@ fastcgi_send_timeout 600s;
 
 * **The Problem:** The Moodle PHP pod became stuck in an `Init:Error` state. Reviewing the initialization container logs showed that the download process retrieved HTML page content instead of the Moodle application archive, causing the extraction process (`tar`) to fail.
 
-* **The Fix:** I updated the `initContainers` configuration in `deployment.yaml` with a direct Moodle archive URL and corrected command parameters. I then removed the corrupted Persistent Volume Claim (`moodle-pvc`) so the initialization process could start with clean storage.
+* **The Fix:** I updated the `initContainers` configuration in `deployment.yaml` to use the direct Moodle archive URL with redirect handling enabled. I then removed the corrupted Persistent Volume Claim (`moodle-pvc`) so the initialization process could restart with clean storage.
+
+```bash
+# Fixed: Uses the explicit direct tarball URL with redirect handling
+wget --max-redirect=5 -O moodle.tgz "https://download.moodle.org/download.php/direct/stable404/moodle-latest-404.tgz"
+```
 
 ---
 
@@ -74,6 +85,13 @@ max_execution_time=300
 
 ## 7. The Hidden Worker Node Redirection (Ingress Routing Scheduling)
 
-* **The Problem:** Every application pod reported healthy, yet browser requests still returned `ERR_EMPTY_RESPONSE`. Investigation showed that Kubernetes had automatically scheduled the `ingress-nginx-controller` pod onto the `lab-worker` node. Unlike a managed cloud Kubernetes environment, my local KinD cluster runs inside Docker containers, and Windows host port mappings were attached only to the `lab-control-plane` node. External traffic entered through the control-plane node, but the ingress controller was running on the worker node, creating a dead-end routing path.
+* **The Problem:** Every application pod reported healthy, yet browser requests still returned `ERR_EMPTY_RESPONSE`. Investigation showed that Kubernetes had scheduled the `ingress-nginx-controller` pod onto the `lab-worker` node. In the local KinD environment, Windows host port mappings were attached only to the `lab-control-plane` node, causing external traffic to reach a node without the ingress controller.
 
-* **The Fix:** I applied a `kubectl patch` with a strict `nodeSelector` configuration, forcing the `ingress-nginx-controller` pod to run on the `lab-control-plane` node where the Windows host port mappings were connected. This aligned the local network entry point with the Kubernetes ingress routing layer.
+* **The Fix:** I updated the ingress controller deployment scheduling rules to force the `ingress-nginx-controller` pod onto the control-plane node using a `nodeSelector` and control-plane toleration. This aligned the external traffic entry point with the ingress routing layer.
+
+```bash
+kubectl get pods -n ingress-nginx -o wide -w
+
+kubectl patch deployment ingress-nginx-controller -n ingress-nginx \
+-p '{"spec":{"template":{"spec":{"nodeSelector":{"ingress-ready":"true"},"tolerations":[{"key":"node-role.kubernetes.io/control-plane","operator":"Exists","effect":"NoSchedule"}]}}}}'
+```
