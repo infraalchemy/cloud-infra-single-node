@@ -6,9 +6,15 @@
 kind
 kind.exe
 
+# MySQL runtime data
+docker/mysql/mysql-data/
+
 # Docker
 docker/node_modules/
 docker/*.log
+
+# Moodle runtime data
+docker/moodledata/
 
 # Kubernetes
 kubernetes/php/*secret*.yaml
@@ -21,4 +27,3 @@ terraform/*.tfvars
 terraform/*.tfvars.json
 terraform/*.tfstate
 terraform/*.tfstate.backup
-
