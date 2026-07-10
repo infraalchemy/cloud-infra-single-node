@@ -19,16 +19,34 @@ I chose Moodle because it is a stateful, multi-tier application that exercises n
 ├── .github/                     # GitHub Actions workflows
 ├── docker/                      # Docker configurations and application settings
 ├── Dockerfile                   # Moodle application image build
-├── kubernetes/                  # Kubernetes manifests
-│   ├── base/                    # Shared Kubernetes resources
-│   │   ├── infrastructure/      # Ingress and cluster configuration
-│   │   ├── mysql/               # Database deployment
-│   │   ├── nginx/               # Nginx reverse proxy
-│   │   ├── php/                 # PHP-FPM application layer
-│   │   └── storage/             # Persistent storage resources
+├── kubernetes/                  # Kubernetes application manifests
+│   │
+│   ├── mysql/                   # MySQL database deployment
+│   │   ├── deployment.yaml
+│   │   ├── service.yaml
+│   │   └── secret.yaml
+│   │
+│   ├── nginx/                   # Nginx reverse proxy deployment
+│   │   ├── configmap.yaml
+│   │   ├── deployment.yaml
+│   │   ├── service.yaml
+│   │   └── secret.yaml
+│   │
+│   ├── php/                     # PHP-FPM Moodle application deployment
+│   │   ├── deployment.yaml
+│   │   ├── service.yaml
+│   │   └── secret.yaml
+│   │
+│   ├── storage/                 # Persistent Moodle storage
+│   │   └── moodle-storage.yaml
+│   │
 │   └── overlays/                # Environment-specific configuration
-│       ├── local-kind/          # Local Kind deployment
-│       └── prod-gcp/            # Planned GCP deployment
+│       ├── local-kind/          # Local KinD Kubernetes environment
+│       │   ├── ingress.yaml
+│       │   ├── kind-config.yaml
+│       │   └── kustomization.yaml
+│       │
+│       └── prod-gcp/            # Planned GKE deployment
 └── terraform/                   # Google Cloud infrastructure automation
 ```
 
