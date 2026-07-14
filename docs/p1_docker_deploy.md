@@ -431,7 +431,24 @@ Successful completion confirms that the Docker Compose deployment correctly sepa
 Remove the application containers, project network, named volumes, and Docker images associated with this Docker Compose deployment:
 
 ```bash
-docker compose down -v --rmi all
+docker-compose down -v --rmi all
+```
+
+Expected Results:
+```text
+Stopping docker_nginx_1   ... done
+Stopping docker_mysql_1   ... done
+Stopping docker_php-fpm_1 ... done
+Removing docker_nginx_1   ... done
+Removing docker_mysql_1   ... done
+Removing docker_php-fpm_1 ... done
+Removing network docker_web_network
+Removing volume docker_mysql_data
+Removing volume docker_moodledata
+Removing volume docker_moodle_code
+Removing image docker_php-fpm
+Removing image docker_nginx
+Removing image mysql:8.0
 ```
 
 *Note:* The `-v` flag removes the named volumes created by this Docker Compose project, permanently deleting the Moodle database and all persistent application data. The `--rmi all` option removes the images used by the deployment, ensuring the next deployment performs a complete image rebuild from the Dockerfiles.
