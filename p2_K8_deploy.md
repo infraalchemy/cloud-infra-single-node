@@ -1,6 +1,6 @@
 # Local Kubernetes Deployment Guide
 
-This document contains the step-by-step commands used to build, deploy, verify, and rebuild the local Kubernetes environment.
+This guide documents the complete engineering process used to build, deploy, validate, and rebuild a local containerized Moodle environment. The entire architecture runs within a local Kubernetes cluster provisioned via KinD.
 
 ---
 
@@ -42,7 +42,7 @@ The deployment follows this sequence:
 
 ---
 
-# KinD Cluster Lifecycle Management
+# KinD Cluster Management
 
 ## Delete Existing Cluster
 
@@ -103,9 +103,8 @@ lab-worker
 
 ---
 
-# Workload Deployment
 
-## Storage Deployment
+# Storage Deployment
 
 Persistent storage is deployed first because Moodle requires application data to survive container replacement.
 
@@ -261,9 +260,27 @@ kubectl delete validatingwebhookconfiguration ingress-nginx-admission
 
 ---
 
-# Initial Application Access and Moodle Setup
 
-## Verify Localhost Access
+# Storage Verification
+
+Verify persistent volume claims:
+
+```bash
+kubectl get pvc
+```
+
+Expected after application deployment:
+
+```text
+STATUS = Bound
+```
+
+This confirms that application workloads have successfully claimed the persistent storage required by Moodle.
+
+---
+
+
+# Localhost Access Verification
 
 After the Ingress controller and Moodle ingress rules are deployed, verify that the application is reachable:
 
@@ -317,9 +334,9 @@ After installation, verify:
 ---
 
 
-# Deployment Lifecycle Verification
+# Deployment Verification
 
-## Verify PHP Image and Application Data Persistence
+## Verify PHP Image and Data Persistence
 
 This test verifies that Kubernetes can recreate the PHP workload while maintaining Moodle application data stored on persistent storage.
 
