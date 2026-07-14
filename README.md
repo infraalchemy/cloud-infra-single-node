@@ -8,60 +8,88 @@ I chose Moodle because it is a stateful, multi-tier application that exercises n
 
 ## Technical Architecture
 
-* **Cloud Deployment:** Docker Compose deployment running on Google Compute Engine.
-* **Local Orchestration:** KinD (Kubernetes in Docker) running on Windows/WSL2 for local Kubernetes development and validation.
-* **Infrastructure as Code:** Terraform used for Google Cloud infrastructure provisioning.
-* **Cloud Automation:** GitHub Actions OIDC authentication with Google Cloud explored as a foundation for future CI/CD automation.
+## Project Documentation
+
+* 📄 **[GCP Terraform Deployment Guide](./docs/gcp_terraform_deploy.md)**  
+  Provision the Google Cloud infrastructure and virtual machine required for the project.
+
+* 📄 **[Phase 1 – Docker Compose Deployment Guide](./docs/p1_docker_deploy.md)**  
+  Build and deploy the containerized Moodle environment on Google Compute Engine.
+
+* 📄 **[Phase 1 – Docker Compose Post-Mortem](./docs/p1_post_mortem.md)**  
+  Troubleshooting notes, lessons learned, and deployment challenges encountered during the Docker Compose implementation.
+
+* 📄 **[Phase 2 – Kubernetes (KinD) Deployment Guide](./docs/p2_K8_deploy.md)**  
+  Deploy the Moodle application stack to a local Kubernetes cluster using KinD.
+
+* 📄 **[Phase 2 – Kubernetes (KinD) Post-Mortem](./docs/p2_post_mortem.md)**  
+  Troubleshooting notes covering Kubernetes networking, ingress, storage, and scheduling issues.
+  
+---
+
 
 ## Repository Structure
 
 ```text
-├── .github/                     # GitHub Actions workflows
-├── docker/                              # Docker Compose deployment
-│   ├── docker-compose.yml               # Moodle multi-container application stack
-│   │
-│   ├── moodledata/                      # Persistent Moodle application data
-│   │
-│   ├── mysql/                           # MySQL database configuration
-│   │   └── mysql-data/                  # Persistent MySQL database storage
-│   │
-│   ├── nginx/                           # Nginx reverse proxy container
-│   │   ├── Dockerfile                   # Custom Nginx image definition
-│   │   └── nginx.conf                   # Nginx web server configuration
-│   │
-│   └── php/                             # PHP-FPM Moodle application container
-│       ├── Dockerfile                   # Custom PHP runtime image
-│       ├── entrypoint.sh                # Container initialization script
-│       ├── index.php                    # PHP test/application entry point
-│       └── testdb.php                   # Database connectivity validation script
-│                      
-├── Dockerfile                   # Moodle application image build
-├── kubernetes/                  # Kubernetes application manifests
-│   ├── mysql/                   # MySQL database deployment
+├── .github/                              # GitHub Actions workflows
+│
+├── docs/                                 # Engineering documentation
+│   ├── gcp_terraform_deploy.md           # GCP VM/infrastructure provisioning guide
+│   ├── p1_docker_deploy.md               # Docker Compose deployment guide
+│   ├── p1_post_mortem.md                 # Docker Compose troubleshooting notes
+│   ├── p2_kubernetes_deploy.md           # Kubernetes KinD deployment guide
+│   └── p2_post_mortem.md                 # Kubernetes troubleshooting notes
+│
+├── docker/                               # Docker Compose deployment
+│   ├── docker-compose.yml                # Moodle multi-container application stack
+│   ├── moodledata/                       # Persistent Moodle application data
+│   ├── mysql/                            # MySQL database configuration
+│   │   └── mysql-data/                   # Persistent MySQL database storage
+│   ├── nginx/                            # Nginx reverse proxy container
+│   │   ├── Dockerfile                    # Custom Nginx image definition
+│   │   └── nginx.conf                    # Nginx configuration
+│   └── php/                              # PHP-FPM Moodle application container
+│       ├── Dockerfile                    # Custom PHP runtime image
+│       ├── entrypoint.sh                 # Container initialization script
+│       ├── index.php                     # PHP validation entry point
+│       └── testdb.php                    # Database connectivity test
+│
+├── kubernetes/                           # Kubernetes application manifests
+│   ├── mysql/                            # MySQL database deployment
 │   │   ├── deployment.yaml
 │   │   └── service.yaml
-│   ├── nginx/                   # Nginx reverse proxy deployment
+│   │
+│   ├── nginx/                            # Nginx reverse proxy deployment
 │   │   ├── configmap.yaml
 │   │   ├── deployment.yaml
-│   │   └── service.yaml 
-│   ├── php/                     # PHP-FPM Moodle application deployment
+│   │   └── service.yaml
+│   │
+│   ├── php/                              # PHP-FPM Moodle application deployment
 │   │   ├── deployment.yaml
 │   │   └── service.yaml
-│   ├── storage/                 # Persistent Moodle storage
+│   │
+│   ├── storage/                          # Persistent Moodle storage
 │   │   └── moodle-storage.yaml
-│   └── overlays/                # Environment-specific configuration
-│       ├── local-kind/          # Local KinD Kubernetes environment
+│   │
+│   └── overlays/                         # Environment-specific configuration
+│       ├── local-kind/                   # Local KinD Kubernetes environment
 │       │   ├── ingress.yaml
 │       │   ├── kind-config.yaml
 │       │   └── kustomization.yaml
-│       └── prod-gcp/            # Planned GKE deployment
-└── terraform/                   # Google Cloud infrastructure provisioning
-    ├── modules/                 # Reusable Terraform modules
-    │   ├── gke/                 # Planned Google Kubernetes Engine resources
-    │   └── vpc/                 # Planned Google Cloud network resources
-    ├── main.tf                  # Terraform entry point
-    ├── outputs.tf               # Terraform outputs
-    └── variables.tf             # Terraform input variables
+│       │
+│       └── prod-gcp/                     # Planned GKE deployment
+│
+├── terraform/                            # Google Cloud infrastructure provisioning
+│   ├── modules/                          # Reusable Terraform modules
+│   │   ├── gke/                          # Planned GKE resources
+│   │   └── vpc/                          # Planned VPC networking resources
+│   ├── main.tf                           # Terraform entry point
+│   ├── outputs.tf                        # Terraform outputs
+│   └── variables.tf                      # Terraform variables
+│
+├── Dockerfile                            # Root Moodle application image build
+├── README.md
+└── .gitignore
 ```
 
 ## Project Documentation
