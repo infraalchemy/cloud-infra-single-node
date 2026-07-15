@@ -1,6 +1,6 @@
-# Phase 1 Deployment Runbook: Docker Compose Workload & Persistence Validation
+# Phase 1 Deployment Runbook: docker-compose Workload & Persistence Validation
 
-This guide documents the deployment, configuration, validation, and persistence testing of a containerized Moodle environment using Docker Compose on a Google Cloud Compute Engine virtual machine.
+This guide documents the deployment, configuration, validation, and persistence testing of a containerized Moodle environment using docker-compose on a Google Cloud Compute Engine virtual machine.
 
 ---
 
@@ -11,13 +11,13 @@ This workload assumes a clean Linux Compute Engine VM has been successfully prov
 Required software on the host VM:
 
 - Docker Engine
-- Docker Compose V2 (space syntax: `docker compose`)
+- docker-compose V2 (space syntax: `docker-compose`)
 - Git
 
 Verify installations:
 ```bash
 docker --version
-docker compose version
+docker-compose version
 git --version
 ```
 
@@ -57,7 +57,6 @@ gcloud compute ssh <YOUR_VM_NAME> --zone=<YOUR_VM_ZONE>
 Enable Docker and configure the local user for non-root Docker execution:
 ```bash
 sudo systemctl enable --now docker
-
 sudo usermod -aG docker $USER
 newgrp docker
 ```
@@ -102,7 +101,7 @@ mysql/
 
 The `.env` file contains database credentials and sensitive configuration values. It is excluded from source control through `.gitignore`.
 
-Create the local environment file:
+The '.env' file must be created in the same directory as 'docker-compose.yml'.
 ```bash
 nano .env
 ```
@@ -115,9 +114,9 @@ MYSQL_USER=moodleuser
 MYSQL_PASSWORD=your_secure_moodle_password
 ```
 
-Validate that Docker Compose successfully resolves the environment configuration:
+Validate that docker-compose successfully resolves the environment configuration:
 ```bash
-docker compose config
+docker-compose config
 ```
 
 *Note: The generated configuration should display resolved service definitions without missing variables.*
@@ -128,12 +127,19 @@ docker compose config
 
 Build the custom application images:
 ```bash
-docker compose build --no-cache
+docker-compose build --no-cache
+```
+
+Expected output:
+```text
+Creating docker_mysql_1   ... done
+Creating docker_php-fpm_1 ... done
+Creating docker_nginx_1   ... done
 ```
 
 Start the application stack in detached mode:
 ```bash
-docker compose up -d
+docker-compose up -d
 ```
 
 Expected deployment output:
@@ -219,7 +225,7 @@ Complete the Moodle installation wizard using the following configuration:
 
 *Notes:*
 - *Retain the default Moodle database table prefix (`mdl_`) unless a custom schema strategy is intentionally required.*
-- *The database host value must reference the Docker Compose service name (`mysql`) rather than `localhost` because the database runs as an independent container.*
+- *The database host value must reference the docker-compose service name (`mysql`) rather than `localhost` because the database runs as an independent container.*
 
 ---
 
@@ -312,7 +318,7 @@ Create application test data before container recreation:
 
    Example contents:
    ```text
-   Docker Compose persistence validation test
+   docker-compose persistence validation test
    ```
 7. Upload `persistence-test.txt` to the Moodle course File resource.
 
@@ -339,10 +345,10 @@ docker exec -it docker-mysql-1 mysql -u moodleuser -p -e "USE moodle; SELECT COU
 
 Stop and remove the running application containers:
 ```bash
-docker compose down
+docker-compose down
 ```
 
-*Note: `docker compose down` removes containers and networks but preserves named Docker volumes. Persistent application and database storage should remain available.*
+*Note: `docker-compose down` removes containers and networks but preserves named Docker volumes. Persistent application and database storage should remain available.*
 
 Verify that application containers no longer exist:
 ```bash
@@ -360,7 +366,7 @@ No active Moodle application containers
 
 Recreate the application stack:
 ```bash
-docker compose up -d
+docker-compose up -d
 ```
 
 Verify that new container instances are running cleanly:
@@ -416,7 +422,7 @@ Expected results:
 - Previously created courses remain available.
 - Uploaded files remain accessible.
 
-Successful completion confirms that the Docker Compose deployment correctly separates:
+Successful completion confirms that the docker-compose deployment correctly separates:
 - Container lifecycle
 - Application runtime
 - Persistent storage
@@ -426,9 +432,9 @@ Successful completion confirms that the Docker Compose deployment correctly sepa
 
 ---
 
-## Stop and Purge the Docker Compose Deployment
+## Stop and Purge the docker-compose Deployment
 
-Remove the application containers, project network, named volumes, and Docker images associated with this Docker Compose deployment:
+Remove the application containers, project network, named volumes, and Docker images associated with this docker-compose deployment:
 
 ```bash
 docker-compose down -v --rmi all
@@ -451,4 +457,4 @@ Removing image docker_nginx
 Removing image mysql:8.0
 ```
 
-*Note:* The `-v` flag removes the named volumes created by this Docker Compose project, permanently deleting the Moodle database and all persistent application data. The `--rmi all` option removes the images used by the deployment, ensuring the next deployment performs a complete image rebuild from the Dockerfiles.
+*Note:* The `-v` flag removes the named volumes created by this docker-compose project, permanently deleting the Moodle database and all persistent application data. The `--rmi all` option removes the images used by the deployment, ensuring the next deployment performs a complete image rebuild from the Dockerfiles.

@@ -1,12 +1,12 @@
 # GCP Terraform Deployment Guide
 
-This document contains the step-by-step commands used to authenticate Google Cloud, configure the deployment environment, provision infrastructure with Terraform, and deploy the Docker Compose application.
+This document contains the step-by-step commands used to authenticate Google Cloud, configure the deployment environment, provision infrastructure with Terraform, and deploy the docker-compose application.
 
 ---
 
 # Prerequisites
 
-This project provisions a Google Cloud Compute Engine virtual machine using Terraform and deploys the application using Docker Compose.
+This project provisions a Google Cloud Compute Engine virtual machine using Terraform and deploys the application using docker-compose.
 
 Required software:
 
