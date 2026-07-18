@@ -234,12 +234,12 @@ Complete the Moodle installation wizard using the following configuration:
 
 Verify that Moodle application files are available inside the PHP-FPM container:
 ```bash
-docker exec docker-php-fpm-1 ls /var/www/html
+docker exec <php container name> ls /var/www/html
 ```
 
 Verify that Nginx has access to the same shared application volume:
 ```bash
-docker exec docker-nginx-1 ls /var/www/html
+docker exec <nginx container name> ls /var/www/html
 ```
 
 Validate write permissions within the Moodle persistent data directory:
@@ -255,7 +255,7 @@ docker exec docker-php-fpm-1 touch /var/www/moodledata/write_test.txt
 
 Connect to the MySQL container:
 ```bash
-docker exec -it docker-mysql-1 mysql -u root -p
+docker exec -it <mysql container name> mysql -u root -p
 ```
 
 Verify database creation:

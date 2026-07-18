@@ -86,9 +86,12 @@ gcloud config set project $PROJECT_ID
 export GOOGLE_PROJECT="$PROJECT_ID"
 export CLOUDSDK_CORE_PROJECT="$PROJECT_ID"
 ```
+Updates are available for some Google Cloud CLI components.
+```bash
+gcloud components update
+```
 
 Verify the active project:
-
 ```bash
 gcloud config list project
 ```
@@ -111,7 +114,6 @@ gcloud auth application-default set-quota-project $PROJECT_ID
 # Identity & Access Management (IAM) Configuration
 
 Elevate network management rights on your developer profile to allow firewall creation:
-
 ```bash
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="user:<YOUR_EMAIL_ADDRESS>" \
@@ -129,17 +131,19 @@ gcloud auth application-default login
 # Required Google Cloud APIs & Billing Alignment
 
 Link your active billing account to prevent project suspension when exposing network rules:
-
 ```bash
 gcloud billing projects link $PROJECT_ID --billing-account=<YOUR_BILLING_ACCOUNT_ID>
 ```
 
 Enable the Google Cloud APIs required for Terraform infrastructure provisioning (execute sequentially to prevent string parsing errors):
-
 ```bash
 gcloud services enable compute.googleapis.com
 gcloud services enable serviceusage.googleapis.com
 gcloud services enable cloudresourcemanager.googleapis.com
+gcloud services enable storage.googleapis.com
+gcloud services enable iam.googleapis.com
+gcloud services enable iamcredentials.googleapis.com
+gcloud services enable secretmanager.googleapis.com
 ```
 
 ---
@@ -147,7 +151,6 @@ gcloud services enable cloudresourcemanager.googleapis.com
 # Terraform Infrastructure Deployment
 
 Initialize Terraform and pull the required provider binaries:
-
 ```bash
 terraform init
 ```
