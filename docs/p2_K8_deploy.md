@@ -17,7 +17,6 @@ Required software:
 - Git
 
 Verify installations:
-
 ```bash
 docker --version
 kind --version
@@ -47,19 +46,16 @@ The deployment follows this sequence:
 ## Delete Existing Cluster
 
 Use when recreating the environment from a clean state.
-
 ```bash
 kind delete cluster --name lab
 ```
 
 Verify the cluster has been removed:
-
 ```bash
 kind get clusters
 ```
 
 Optional check for leftover KinD containers:
-
 ```bash
 docker ps -a | grep kind
 ```
@@ -77,25 +73,21 @@ kind create cluster \
 ```
 
 Configure kubectl context:
-
 ```bash
 kind export kubeconfig --name lab
 ```
 
 Expected context:
-
 ```text
 * kind-lab
 ```
 
 Verify cluster nodes:
-
 ```bash
 kubectl get nodes
 ```
 
 Expected result:
-
 ```text
 lab-control-plane
 lab-worker
@@ -107,13 +99,11 @@ lab-worker
 # Storage Deployment
 
 Persistent storage is deployed first because Moodle requires application data to survive container replacement.
-
 ```bash
 kubectl apply -f kubernetes/storage/moodle-storage.yaml
 ```
 
 Verify storage resources:
-
 ```bash
 kubectl get pv
 kubectl get pvc
@@ -124,19 +114,16 @@ kubectl get pvc
 # Database Deployment (MySQL)
 
 Deploy the database layer:
-
 ```bash
 kubectl apply -f kubernetes/mysql/
 ```
 
 Restart if required:
-
 ```bash
 kubectl rollout restart deployment mysql
 ```
 
 Monitor startup:
-
 ```bash
 kubectl get pods -w
 ```
@@ -148,37 +135,31 @@ kubectl get pods -w
 The PHP image is customized because Moodle requires additional PHP extensions and runtime configuration.
 
 Build the custom image:
-
 ```bash
 docker build -t extn-php:8.2 .
 ```
 
 Load the image into the KinD cluster:
-
 ```bash
 kind load docker-image extn-php:8.2 --name lab
 ```
 
 Deploy PHP:
-
 ```bash
 kubectl apply -f kubernetes/php/
 ```
 
 Restart PHP after image updates:
-
 ```bash
 kubectl rollout restart deployment php
 ```
 
 Monitor startup:
-
 ```bash
 kubectl get pods -w
 ```
 
 Check Moodle initialization:
-
 ```bash
 kubectl logs deploy/php -c init-moodle
 ```
@@ -188,37 +169,31 @@ kubectl logs deploy/php -c init-moodle
 # Nginx Web Server Deployment
 
 Deploy the frontend web server:
-
 ```bash
 kubectl apply -f kubernetes/nginx/
 ```
 
 Restart after configuration changes:
-
 ```bash
 kubectl rollout restart deployment nginx
 ```
 
 Monitor startup:
-
 ```bash
 kubectl get pods -w
 ```
 
 Verify Nginx configuration:
-
 ```bash
 kubectl exec deploy/nginx -- nginx -t
 ```
 
-Expected:
-
-```text
-nginx: configuration file /etc/nginx/nginx.conf test is successful
-```
+	Expected:
+	```text
+	nginx: configuration file /etc/nginx/nginx.conf test is successful
+	```
 
 Inspect active routing configuration:
-
 ```bash
 kubectl exec deploy/nginx -- nginx -T | grep "server_name"
 ```
@@ -228,32 +203,27 @@ kubectl exec deploy/nginx -- nginx -T | grep "server_name"
 # Ingress Routing
 
 Deploy the ingress controller:
-
 ```bash
 kubectl apply -f ingress-nginx.yaml
 ```
 
 Wait for the ingress controller:
-
 ```bash
 kubectl get pods -n ingress-nginx -w
 ```
 
 Apply Moodle ingress rules:
-
 ```bash
 kubectl apply -f kubernetes/overlays/local-kind/ingress.yaml
 ```
 
 Verify ingress resources:
-
 ```bash
 kubectl get ingress
 kubectl describe ingress
 ```
 
 If the admission webhook becomes stuck due to stale local cluster state:
-
 ```bash
 kubectl delete validatingwebhookconfiguration ingress-nginx-admission
 ```
@@ -264,13 +234,11 @@ kubectl delete validatingwebhookconfiguration ingress-nginx-admission
 # Storage Verification
 
 Verify persistent volume claims:
-
 ```bash
 kubectl get pvc
 ```
 
 Expected after application deployment:
-
 ```text
 STATUS = Bound
 ```
@@ -283,7 +251,6 @@ This confirms that application workloads have successfully claimed the persisten
 # Localhost Access Verification
 
 After the Ingress controller and Moodle ingress rules are deployed, verify that the application is reachable:
-
 ```text
 http://localhost
 ```
@@ -316,8 +283,6 @@ Complete the Moodle installation wizard using the following values:
 ### Moodle Table Prefix Note
 
 Leave the table prefix as the default:
-
-
 ```text
 mdl_
 ```
@@ -341,25 +306,21 @@ After installation, verify:
 This test verifies that Kubernetes can recreate the PHP workload while maintaining Moodle application data stored on persistent storage.
 
 Before deleting the pod, verify the current PHP deployment image:
-
 ```bash
 kubectl get deployment php -o jsonpath="{.spec.template.spec.containers[0].image}"
 ```
 
 Expected:
-
 ```text
 extn-php:8.2
 ```
 
 Delete the PHP pod:
-
 ```bash
 kubectl delete pod -l app=php
 ```
 
 Verify Kubernetes creates a replacement pod:
-
 ```bash
 kubectl get pods -w
 ```
@@ -375,19 +336,16 @@ php-yyyyy     1/1   Running   0   84s
 The new PHP pod name and recent age confirm Kubernetes recreated the workload.
 
 Verify Moodle application files are still available:
-
 ```bash
 kubectl exec deploy/php -- ls /var/www/html
 ```
 
 Expected:
-
 ```text
 Existing Moodle files are still present
 ```
 
 Confirm the application is still accessible:
-
 ```text
 http://localhost
 ```
@@ -422,12 +380,10 @@ This removes the Kubernetes cluster, workloads, services, and pods.
 ## Reset Application Data
 
 Use when keeping the cluster but removing persistent Moodle data:
-
 ```bash
 kubectl delete pvc --all
 ```
 If you want to restart workloads:
-
 ```bash
 kubectl delete pods --all
 ```
@@ -436,7 +392,6 @@ kubectl delete pods --all
 ## Remove Unused Docker Resources
 
 Optional cleanup:
-
 ```bash
 docker system prune -a --volumes -f
 ```

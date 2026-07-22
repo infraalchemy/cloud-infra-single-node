@@ -4,213 +4,198 @@ Deploying the infrastructure architecture onto Google Cloud Platform (GCP) from 
 
 ---
 
-## 1. The Legacy State Memory & Project Identity Collision (Terraform Caching Layer)
+## 1. Terraform State File Conflicts
 
-* **The Problem:** I encountered an immediate `403 Forbidden` error when trying to run `terraform plan`. The local command engine flatly refused to validate the blueprint. The system error message tracked an old, legacy project environment name (`cloud-lab-492115`) which was nowhere to be found in the current source code configuration files.
+* **The Problem:** Running `terraform plan` returned a `403 Forbidden` error. Terraform was referencing an older GCP project environment (`cloud-lab-XXXXX`) that was no longer part of the active configuration.
 
-* **The Cause:** Even though the project ID was removed from the active `.tf` code blocks, Terraform had cached the exact resource metadata and tracking mappings from the previous computer session directly inside its local `.tfstate` and `.terraform/` history directories. When executed, Terraform attempted to inspect the ghost resources in the old project, triggering a permission denial.
+* **The Cause:** Although the previous project ID had been removed from the Terraform configuration files, local Terraform state and initialization data from the previous environment were still present. Terraform used this existing state information during execution, causing resources to be evaluated against the incorrect project context.
 
-* **The Fix:** I completely purged the hidden configuration cache directories and legacy tracking files using `rm -rf`. This forced the infrastructure mapping manager back into an absolute clean-slate state.
-
+* **The Fix:** Removed the local Terraform state and initialization files to force a clean Terraform initialization:
 ```bash
-# Wiping the state database to break tracking ties with the old account
 rm -rf .terraform/
 rm -f terraform.tfstate terraform.tfstate.backup
 ```
-
 ---
 
-## 2. The Terminal Environment Tug-of-War (Local CLI Variable Mappings)
 
-* **The Problem:** After pointing the standard `gcloud` context to the newly generated project, the local terminal window completely ignored the updates. Commands to verify project variables or interact with APIs continuously defaulted back to an invalid environment string: `my-project-51160`.
+## 2. GCP Environment Context Issues
 
-* **The Cause:** Local shell environments run a strict prioritization scheme. High-priority environment flags (`CLOUDSDK_CORE_PROJECT` and `GOOGLE_PROJECT`) were holding active overrides in the terminal buffer from an early session setup pass. These system overrides consistently hijacked standard configuration modifications behind the scenes.
+* **The Problem:** After transitioning to a different GCP environment and project, `gcloud` commands continued referencing the previous project configuration.
 
-* **The Fix:** I executed a terminal cache memory clear by unsetting the conflicting environment definitions entirely. I then remaped the environment variables to align exactly with the real project id string: `civic-champion-439320-a5`.
+* **The Cause:** Local environment variables (`CLOUDSDK_CORE_PROJECT` and `GOOGLE_PROJECT`) remained set from the previous environment and overrode the updated `gcloud` project configuration.
 
+* **The Fix:** Cleared the outdated environment variables, updated the active GCP project context, and validated the configuration before continuing deployment.
+
+Remove old project overrides from the current shell session.
 ```bash
-# Force-clearing the terminal priority buffer memories
 unset CLOUDSDK_CORE_PROJECT
 unset GOOGLE_PROJECT
+```
 
-export GOOGLE_PROJECT="civic-champion-439320-a5"
-export CLOUDSDK_CORE_PROJECT="civic-champion-439320-a5"
+Set the intended GCP project for this session.
+```bash
+export GOOGLE_PROJECT="<PROJECT_ID>"
+export CLOUDSDK_CORE_PROJECT="<PROJECT_ID>"
+```
+
+Verify intended active gcloud project configuration.
+```bash
+gcloud config get-value project
+```
+
+Verify authenticated as the correct Google account.
+```bash
+gcloud config get-value account
 ```
 
 ---
 
-## 3. The Empty-Financial Security Blockade (GCP Threat Mitigation Layer)
+## 3.GCP Project Activation Issues
 
-* **The Problem:** When running a plan compilation or script execution against the unblocked project space, the platform threw a critical security lockout: `googleapi: Error 403: Consumer 'projects/my-project-51160' has been suspended`. 
+* **The Problem:** Terraform deployment failed with a `403 Forbidden` error because the active GCP project was suspended:
+```text
+googleapi: Error 403: Consumer 'projects/<PROJECT_ID>' has been suspended.
+```
 
-* **The Cause:** When Terraform executes, the network configuration blocks request an open ingress rule targeting the whole public world (`source_ranges = ["0.0.0.0/0"]`). To GCP's automated threat-detection mechanisms, opening global web communication ports on a fresh user account that has no valid financial billing backing linked to it mimics a security compromise. The system applied an automatic, preventive suspension block to safeguard platform resources.
+* **The Cause:** The target GCP project was not ready for resource deployment. The project billing status and configuration needed to be validated before Terraform could create resources.
 
-* **The Fix:** I bypassed the console interface and used the terminal tool belt to explicitly bind a verified active billing voucher token profile directly into the core project metadata container.
-
+* **The Fix:** Verified the project billing configuration and linked an active billing account to the GCP project:
 ```bash
-# Force-linking the payment channel architecture to lift the automated lock
-gcloud billing projects link civic-champion-439320-a5 \
-  --billing-account=01A435-5FF40E-9232BA
+gcloud billing projects link <PROJECT_ID> --billing-account=<BILLING_ACCOUNT_ID>
 ```
 
 ---
 
-## 4. The Multi-Line Input Parsing Truncation (Shell Execution Syntax)
+## 4. IAM Permission Validation
 
-* **The Problem:** While executing service activation scripts, the command line prompt failed with an `AUTH_PERMISSION_DENIED` and reported a `SERVICE_CONFIG_NOT_FOUND_OR_PERMISSION_DENIED` error. The error details indicated that the command execution target was pointing to a broken website literal string: `://googleapis.com`.
-
-* **The Cause:** A copy-paste formatting line-wrap anomaly occurred within the shell terminal buffer. The line-continuation backslash characters (`\`) were incorrectly parsed, causing the terminal interpreter to split the multi-line input block. The engine attempted to interpret a malformed slice of the script argument as a raw service call destination.
-
-* **The Fix:** I isolated the execution parameters, dropping the multi-line array mappings down into separate, independent execution passes.
-
-```bash
-# Breaking arguments down to safe, single-line sequential inputs
-gcloud services enable googleapis.com
-gcloud services enable googleapis.com
-gcloud services enable googleapis.com
+* **The Problem:** After correcting the project context, Terraform failed while creating network resources with a critical `403 Permission Denied` error:
+```text
+Error creating Firewall: googleapi: Error 403: Permission denied on resource project <PROJECT_ID>
 ```
 
----
+* **The Cause:** The authenticated account did not have the required permissions to create Compute Engine networking resources in the target GCP project. 
 
-## 5. The Sync Latency Access Lockout (IAM Propagation Delay)
-
-* **The Problem:** After aligning project contexts, activating the core engines, and establishing financial parameters, running a resource deployment plan failed on the networking phase with an internal permission blocker: `Error creating Firewall: googleapi: Error 403: Permission denied on resource project civic-champion-439320-a5`.
-
-* **The Cause:** When a project is updated or generated on a fresh machine environment, global identity synchronization delays can happen across Google's distributed backend directories. The master account identity (`abbeyster@gmail.com`) had not yet inherited full security authorization mappings across the local Compute Engine networking subclass.
-
-* **The Fix:** I manually injected a high-clearance IAM role binding statement to assign explicit administrative rights over the compute security system directly onto the user profile, then flushed the background token keys.
-
+* **The Fix:** Updated the project IAM permissions and refreshed the local authentication credentials:
 ```bash
-# Manual privilege escalation block for security network creation
-gcloud projects add-iam-policy-binding civic-champion-439320-a5 \
-    --member="user:abbeyster@gmail.com" \
+gcloud projects add-iam-policy-binding <PROJECT_ID> \
+    --member="user:<ACCOUNT_EMAIL>" \
     --role="roles/compute.admin"
+```
 
+Refresh local Application Default Credentials (ADC)
+```bash
 gcloud auth application-default login
 ```
 
-# Technical Addendum: Web Interface Installation & CLI Workload Recovery
-
-This section documents the hybrid engineering process used to execute the Moodle database setup via the web installation wizard, bypass the administrative session profile timeout error via the container command line, and programmatically validate data persistence.
+ADC allows tools such as Terraform and Google Cloud SDK integrations to authenticate API requests using the configured user account.
 
 ---
 
-# 1. Hybrid Web Wizard Installation Execution
+## 5. Shell Command Formatting and Multi-Line Input Issues
 
-### Operational Sequence
-To maximize deployment velocity, the environment initialization was completed using a coordinated hybrid sequence. The relational database schema, tables, and engine configurations were built using the visual user interface up until the final boundary block:
+* **The Problem:** While enabling GCP services, the command execution failed with an `AUTH_PERMISSION_DENIED` / `SERVICE_CONFIG_NOT_FOUND_OR_PERMISSION_DENIED` error. The error output showed that the service name was being interpreted incorrectly due to a malformed command argument.
 
-1. Navigated to the cloud VM external IP address string via an Incognito browser window: `http://34.130.98.92`
-2. Followed the guided web installation screens to link the Nginx proxy, PHP runtime, and MySQL relational database.
-3. Allowed the engine to execute the complete compilation loop, outputting a rolling page of green **"Success"** database table initialization logs.
-4. Selected the blue **"Continue"** confirmation action button at the base of the table compilation summary screen.
-5. Arrived exactly at the final system-generated administrative user configuration page target path:
-   ```text
-   http://34.130.98
-   ```
+* **The Cause:** A multi-line command copied into the terminal was not parsed correctly. The line continuation characters (`\`) caused the command input to split incorrectly, resulting in an invalid service name being passed to the `gcloud` command.
 
----
-
-# 2. Reverse Proxy Session Drop Lifecycle (The Invalid Sesskey Bug)
-
-### Cause
-The exact millisecond the web setup wizard redirected traffic onto the final profile step (`/user/editadvanced.php?id=2`), the platform threw an automated intercept block when attempting to update user metadata fields. 
-
-Because the web installer compiles data inside an isolated Docker container bridge network space, it generates form verification keys based on local network parameters. When an external web browser pushes form modifications from the outside world across a raw, ephemeral cloud IP address, Moodle detects a cross-domain token mismatch. It flags the operation as a security threat and terminates the tracking handshake, outputting:
-
-```text
-error/moodle/invalidsesskey
-The most likely reason for obtaining an "Invalid Sesskey" message is because your session has timed out.
-```
-
-### Resolution
-Left the web browser window open on the stuck form page to preserve the compiled installer state. Jumped directly into the VM host browser SSH console and executed Moodle's built-in administration command-line interface (CLI) utilities inside the running `php-fpm` container layer. 
-
-This bypassed the broken web screen entirely, force-seeding the administrator account details and password properties directly into the MySQL database tables from the terminal:
+* **The Fix:** I simplified the command execution by separating multi-line commands into individual single-line commands, ensuring each service activation request was processed correctly.
 
 ```bash
-# 1. Force update the master administrator password via terminal injection
-docker exec -it docker_php-fpm_1 php /var/www/html/admin/cli/reset_password.php --username=admin
+gcloud services enable compute.googleapis.com
+gcloud services enable serviceusage.googleapis.com
+gcloud services enable cloudresourcemanager.googleapis.com
+```
 
-# 2. Flush the broken security tokens out of the session backend cache
+---
+
+
+## 6. Moodle Administrator Setup
+
+* **The Problem:** The Moodle web installer timed out during the final administrator account setup wizard and returned an `invalidsesskey` token error:
+```text
+error/moodle/invalidsesskey
+```
+
+* **The Cause:** The administrator account page failed to complete through the browser session, preventing the installation wizard from finishing. This was an interface-level session tracking dropout, meaning the database schema initialization had already completed successfully behind the scenes.
+
+* **The Fix:** Completed the remaining administrator account profile configuration using Moodle's built-in CLI tools directly inside the running PHP-FPM container:
+
+Identify the PHP-FPM container name:
+```bash
+docker ps
+```
+
+Force update the master administrator account password via terminal injection:
+```bash
+docker exec -it docker_php-fpm_1 php /var/www/html/admin/cli/reset_password.php --username=admin
+```
+
+Flush the broken security tokens out of the session backend cache:
+```bash
 docker exec -it docker_php-fpm_1 php /var/www/html/admin/cli/purge_caches.php
 ```
 
 ---
 
-# 3. Reverse Proxy Infinite Redirection Loop (`ERR_TOO_MANY_REDIRECTS`)
+## 7. Moodle Slash Arguments and Nginx Configuration
 
-### Cause
-Immediately following the terminal administration profile update, browser requests navigating back to the login landing page triggered a continuous circular path routing error. This occurs because the internal `config.php` file lacks explicit instructions defining its relationship with the external gateway proxy layer. Nginx forwards data down to PHP-FPM, and PHP-FPM bounces it back to Nginx, trapping user connections.
+* **The Problem:** Uploaded Moodle resources, including site images and course files, completely failed to render correctly across the user interface.
 
-### Resolution
-Hard-aligned reverse proxy mapping constraints directly on the VM host's underlying storage volume block without altering the local repository files. Injected compliance flags directly into the configuration array using string modification utilities:
+* **The Cause:** Moodle uses slash arguments when serving files out of its storage directories. The Nginx PHP configuration block was not correctly capturing or passing the required `PATH_INFO` metadata variables down to the PHP-FPM processing engine.
 
-```bash
-# Force-inject reverse proxy trust settings directly into the active config file layout
-sudo sed -i "/require_once/i \$CFG->reverseproxy = true;\n\$CFG->sslproxy = false;\n" /var/lib/docker/volumes/docker_moodle_code/_data/config.php
+* **The Fix:** Updated the Nginx PHP location configuration block to explicitly extract and include the required FastCGI parameters:
 
-# Cycle the application stack to load the newly updated configuration properties
-docker-compose restart
+```nginx
+location ~ [^/]\.php(/|\$) {
+    fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+    
+    include fastcgi_params;
+    fastcgi_pass php-fpm:9000;
+    
+     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param PATH_INFO $fastcgi_path_info;
+}
 ```
 
 ---
 
-# 4. Moodle Web Layout Render Failures (Broken Interface Navigation)
+## 8. Moodle Slash Arguments and Nginx Configuration
 
-### Cause
-Due to asset rendering conflicts between Moodle's "slash arguments" property and standard Nginx location parsing configurations, the web page loaded raw HTML without functional CSS styling or working hyperlink routes. Clicking buttons via the browser interface to complete the storage persistence test was unavailable.
+* **The Problem:** Uploaded Moodle resources, including site images and course files, completely failed to render correctly across the user interface.
 
-### Resolution
-Bypassed browser operations entirely. Executed all Phase 4 high-availability storage verification and lifecycle validation checks programmatically via the virtual machine command line interface.
+* **The Cause:** Moodle uses slash arguments when serving files out of its storage directories. The Nginx PHP configuration block was not passing the required path information (`PATH_INFO`) down to the PHP-FPM processing engine.
 
-```bash
-# 1. Programmatically inject the validation test course into the database
-docker exec -it docker_php-fpm_1 php /var/www/html/admin/cli/create_course.php \
-  --fullname="Infrastructure Test Course" \
-  --shortname="PersistenceTest" \
-  --category=1
-
-# 2. Construct the direct persistence tracking file marker in the shared app volume
-docker exec -it docker_php-fpm_1 bash -c \
-  "echo 'Docker Compose persistence validation test' > /var/www/moodledata/persistence-test.txt"
-
-# 3. Verify that the file can be read through the container runtime layers
-docker exec -it docker_php-fpm_1 cat /var/www/moodledata/persistence-test.txt
-
-# 4. Audit course entry metric count inside the relational storage engine before destruction
-docker exec -it docker-mysql-1 mysql -u moodleuser -p'yourpassword' \
-  -e "USE moodle; SELECT COUNT(*) FROM mdl_course;"
+* **The Fix:** Updated the Nginx PHP location configuration block to explicitly include the required FastCGI parameters:
+```nginx
+fastcgi_param SCRIPT_FILENAME \(document_root\)fastcgi_script_name;
+fastcgi_param PATH_INFO \$fastcgi_path_info;
 ```
 
 ---
 
-# 5. Complete Container Destruction & Recovery Loop
+## 8. Cloud VM Nginx Server Configuration
 
-To verify that the application layer is successfully separated from the data persistence layer, execute a full runtime service rotation flight:
+* **The Problem:** Moodle was not responding correctly when accessed through the Google Cloud VM external IP address.
 
-```bash
-# Tear down active runtime containers and networks while protecting named storage volumes
-docker-compose down
-
-# Verify zero application components remain online on the VM host
-docker ps -a
-
-# Relaunch the infrastructure stack cleanly
-docker-compose up -d
+* **The Cause:** The Nginx configuration used the local development setting:
+```nginx
+server_name localhost;
 ```
 
-### Final Data Consistency Audit
-Verify the tracking file and database transactions completely survived the infrastructure container rotation:
+* **The Fix:** Updated the Nginx server configuration for the deployment environment. 
 
-```bash
-# Expected output: "Docker Compose persistence validation test"
-docker exec -it docker_php-fpm_1 cat /var/www/moodledata/persistence-test.txt
+Catch-All Wildcard (Immune to Ephemeral IP Changes):
+```nginx
+server_name _;
+```
+or
+Explicit Binding (Requires Updating if the Cloud IP Rotates):
+```nginx
+server_name 34.xxx.xx.xxx;
+``` 
 
-# Expected output: Course count matches the initial metrics baseline exactly
-docker exec -it docker-mysql-1 mysql -u moodleuser -p'yourpassword' \
-  -e "USE moodle; SELECT COUNT(*) FROM mdl_course;"
+For production deployments using a registered domain name and HTTPS:
+```nginx
+server_name moodle.company.com;
 ```
 
-**Result:** Data persistence verified. The multi-container workload safely handles container lifecycle destruction loops with zero application state loss.
-
+Production environments should also include SSL/TLS configuration and certificate management.

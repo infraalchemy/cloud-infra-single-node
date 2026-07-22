@@ -1,17 +1,17 @@
-# Phase 1 Deployment Runbook: docker-compose Workload & Persistence Validation
+# Phase 1 Deployment Runbook: Docker Compose Workload & Persistence Validation
 
-This guide documents the deployment, configuration, validation, and persistence testing of a containerized Moodle environment using docker-compose on a Google Cloud Compute Engine virtual machine.
+This guide documents the deployment, configuration, validation, and persistence testing of a containerized Moodle environment using Docker Compose on a Google Cloud Compute Engine virtual machine.
 
 ---
 
 # Prerequisites
 
-This workload assumes a clean Linux Compute Engine VM has been successfully provisioned.
+This deployment assumes a clean Linux Compute Engine VM has already been provisioned.
 
 Required software on the host VM:
 
 - Docker Engine
-- docker-compose V2 (space syntax: `docker-compose`)
+- Docker Compose CLI (docker-compose commands used by this deployment)
 - Git
 
 Verify installations:
@@ -25,7 +25,7 @@ git --version
 
 # Deployment Workflow
 
-The workload deployment follows this sequence:
+The deployment process follows this sequence:
 
 1. Configure Docker runtime permissions
 2. Clone infrastructure repository and prepare environment configuration
@@ -34,14 +34,14 @@ The workload deployment follows this sequence:
 5. Validate container health and internal networking
 6. Complete Moodle web installation wizard configuration
 7. Verify database initialization
-8. Execute container lifecycle persistence validation
-9. Stop and optionally destroy workload resources
+8. Execute persistence validation after container recreation
+9. Stop or remove deployment resources when required.
 
 ---
 
 ## Connect to the Host Virtual Machine
 
-Connect directly to your running cloud instance using the browser console interface (Easiest):
+Connect directly to your running cloud instance using the browser console interface:
 1. Open your web browser to the **GCP Compute Engine Console**.
 2. Click the blue **SSH** button link on the far right of your VM's row.
 
@@ -101,7 +101,7 @@ mysql/
 
 The `.env` file contains database credentials and sensitive configuration values. It is excluded from source control through `.gitignore`.
 
-The '.env' file must be created in the same directory as 'docker-compose.yml'.
+The `.env` file must be created in the same directory as 'docker-compose.yml'.
 ```bash
 nano .env
 ```
@@ -114,7 +114,7 @@ MYSQL_USER=moodleuser
 MYSQL_PASSWORD=your_secure_moodle_password
 ```
 
-Validate that docker-compose successfully resolves the environment configuration:
+Verify the Docker Compose configuration:
 ```bash
 docker-compose config
 ```
@@ -156,7 +156,7 @@ Expected deployment output:
 
 # Runtime Verification
 
-Verify the application containers are running
+Verify the application containers are running:
 ```bash
 docker ps
 ```
@@ -180,7 +180,7 @@ docker network inspect docker_web_network
 
 Validate that the Nginx reverse proxy is responding locally from the VM:
 ```bash
-curl -I http://localhost
+curl -I http://<GCP_EXTERNAL_IP>
 ```
 
 Expected response:
@@ -193,7 +193,7 @@ Retrieve the external VM address for browser access:
 curl -4 ifconfig.me
 ```
 
-Verify that a Google Cloud firewall rule allows inbound HTTP (TCP port 80) to thetarget VM instance.
+Verify that a Google Cloud firewall rule allows inbound HTTP (TCP port 80) to the target VM instance.
 - **TCP Port:** `80`
 - **Source:** Required client access range
 - **Target:** VM instance
@@ -208,7 +208,20 @@ http://<YOUR_VM_EXTERNAL_IP>
 
 # Moodle Web Installation
 
-Complete the Moodle installation wizard using the following configuration:
+Complete the Moodle installation wizard using the following sequence:
+
+**Choose Language**
+   - Select the installation language.
+
+**Confirm Paths**
+   - Verify the web address and Moodle data directory.
+
+**Choose Database Driver**
+   - Select the database type:
+     - MySQL / MariaDB
+
+**Database Settings**
+   - Enter the database configuration:
 
 | Setting | Value |
 | :--- | :--- |
@@ -223,28 +236,72 @@ Complete the Moodle installation wizard using the following configuration:
 | **Database Password** | `<MYSQL_PASSWORD from .env>` |
 | **Table Prefix** | `mdl_` |
 
+**Copyright Notice**
+   - Accept the Moodle GPL license agreement.
+
+**Server Checks**
+   - Review PHP extensions and environment requirements.
+   - Continue once all required checks pass.
+
+**Installation**
+   - Allow Moodle to create the database tables and complete application initialization.
+
+**Setup Administrator Account**
+   - Leave the browser open at this page.
+   - Complete administrator configuration using Moodle CLI tools inside the PHP-FPM container.
+
+
 *Notes:*
 - *Retain the default Moodle database table prefix (`mdl_`) unless a custom schema strategy is intentionally required.*
-- *The database host value must reference the docker-compose service name (`mysql`) rather than `localhost` because the database runs as an independent container.*
+- *The database host must reference the Docker Compose service name (mysql) rather than localhost, as MySQL runs in a separate container.*
 
 ---
 
+# Administrator Setup Completion (CLI)
+
+The Moodle administrator account was configured using Moodle's built-in command-line tools inside the running PHP-FPM container.
+
+Identify Running Container Name for PHP-FPM:
+```bash
+docker ps
+```
+
+Reset the administrator password:
+```bash
+docker exec -it <php-fpm-name> \
+php /var/www/html/admin/cli/reset_password.php --username=admin
+```
+
+Clear Moodle application caches:
+```bash
+docker exec -it <php-fpm-name> \
+php /var/www/html/admin/cli/purge_caches.php
+```
+
+This completed the administrator setup while preserving the existing Moodle installation state.
+
+---
 
 ## Storage Validation
 
+Verfy the running containers and their assigned names: 
+```bash
+docker ps
+```
+
 Verify that Moodle application files are available inside the PHP-FPM container:
 ```bash
-docker exec <php container name> ls /var/www/html
+docker exec <php name> ls /var/www/html
 ```
 
 Verify that Nginx has access to the same shared application volume:
 ```bash
-docker exec <nginx container name> ls /var/www/html
+docker exec <nginx name> ls /var/www/html
 ```
 
 Validate write permissions within the Moodle persistent data directory:
 ```bash
-docker exec docker-php-fpm-1 touch /var/www/moodledata/write_test.txt
+docker exec <php name> touch /var/www/moodledata/write_test.txt
 ```
 
 *Note: Successful completion confirms that the PHP runtime can write to persistent application storage.*
@@ -253,9 +310,14 @@ docker exec docker-php-fpm-1 touch /var/www/moodledata/write_test.txt
 
 ## Database Verification
 
+Verfy the running container and the assigned MySQL name:
+```bash
+docker ps
+```
+
 Connect to the MySQL container:
 ```bash
-docker exec -it <mysql container name> mysql -u root -p
+docker exec -it <mysql name> mysql -u root -p
 ```
 
 Verify database creation:
@@ -285,57 +347,66 @@ exit;
 ```
 ---
 
-## Persistence Validation
+# Create Moodle Test Data for Persistence Validation
 
-This validation confirms that application data and database state survive container destruction and recreation cycles.
 
-The test demonstrates:
-- Persistent Docker volume configuration
-- Database storage retention
-- Application file persistence
-- Container replacement recovery
-
----
-
-# Create Test Data
-
-Create application test data before container recreation:
+Before recreating the container stack, create application data to verify database and file storage persistence.
 
 1. Log into the Moodle web interface as the administrator.
-2. Create a course named:
+2. Complete and save the administrator profile.
+3. Upload an administrator profile image.
+4. Create a test course:
    ```text
    Infrastructure Test Course
    ```
-3. Open the course.
-4. Enable editing:
-   - Navigate to the **Course page**
-   - Select **Turn editing on**
-5. Add a file resource:
-   - Select **Add an activity or resource**
-   - Choose **File**
-6. Create a test file on your local computer named:
-   `persistence-test.txt`
+5. Upload a course image.
+6. Confirm the profile image and course image render correctly before container recreation.
 
-   Example contents:
-   ```text
-   docker-compose persistence validation test
-   ```
-7. Upload `persistence-test.txt` to the Moodle course File resource.
+### Persistence Validation
 
+Recreate the container stack to verify application data persists:
+
+```bash
+docker-compose down
+docker-compose up -d
+```
+
+### Validation
+
+Verify after container restart:
+
+* Administrator account
+* Course data
+* Uploaded images
+
+This validates the Moodle upload workflow and confirms that uploaded files persist after container recreation.
+
+```text
+Browser upload ➔ Moodle file API ➔ moodledata volume ➔ database references ➔
+```
 Moodle automatically maps and stores the uploaded file inside the persistent Moodle data directory:
 ```text
 /var/www/moodledata
 ```
-   
-Alternatively, create a direct persistence marker inside the Moodle data volume via the command line:
-```bash
-docker exec docker-php-fpm-1 bash -c "echo 'Persistence Token Verification' > /var/www/moodledata/persistence_lock.txt"
-```
-
+	
 Verify that the database contains existing application records before container recreation:
 ```bash
-docker exec -it docker-mysql-1 mysql -u moodleuser -p -e "USE moodle; SELECT COUNT(*) FROM mdl_user;"
+docker exec -it <mysql name> -u moodleuser -p -e "USE moodle; SELECT COUNT(*) FROM mdl_user;"
 ```
+
+Optional Storage Validation, create a direct persistence marker inside the Moodle data volume via the command line:
+```bash
+docker exec <php-fpm name> bash -c "echo 'Persistence Token Verification' > /var/www/moodledata/persistence_lock.txt"
+```
+
+Then check marker:
+```bash
+docker exec <php-fpm name> cat /var/www/moodledata/persistence_lock.txt
+```
+	Expect output
+	```text
+	Persistence Token Verification
+	```
 
 *Note: Record the returned user count for comparison after recovery.*
 
@@ -389,7 +460,7 @@ docker-mysql-1
 
 Verify the persistence marker survived container recreation:
 ```bash
-docker exec docker-php-fpm-1 cat /var/www/moodledata/persistence_lock.txt
+docker exec <php-fpm name> cat /var/www/moodledata/persistence_lock.txt
 ```
 
 Expected output:
@@ -399,8 +470,8 @@ Persistence Token Verification
 
 Verify that the MySQL database volume retained application records:
 ```bash
-docker exec -it docker-mysql-1 mysql -u moodleuser -p -e "USE moodle; SELECT COUNT(*) FROM mdl_user;"
-```
+docker exec -it <mysql name> mysql -u moodleuser -p -e "USE moodle; SELECT COUNT(*) FROM mdl_user;"
+```---
 
 Expected result:
 ```text
@@ -422,7 +493,7 @@ Expected results:
 - Previously created courses remain available.
 - Uploaded files remain accessible.
 
-Successful completion confirms that the docker-compose deployment correctly separates:
+Successful completion confirms separation between:
 - Container lifecycle
 - Application runtime
 - Persistent storage
@@ -432,9 +503,9 @@ Successful completion confirms that the docker-compose deployment correctly sepa
 
 ---
 
-## Stop and Purge the docker-compose Deployment
+## Stop and Purge the Docker Compose Deployment
 
-Remove the application containers, project network, named volumes, and Docker images associated with this docker-compose deployment:
+Remove the application containers, project network, named volumes, and Docker images associated with this Docker Compose deployment:
 
 ```bash
 docker-compose down -v --rmi all
@@ -457,4 +528,5 @@ Removing image docker_nginx
 Removing image mysql:8.0
 ```
 
-*Note:* The `-v` flag removes the named volumes created by this docker-compose project, permanently deleting the Moodle database and all persistent application data. The `--rmi all` option removes the images used by the deployment, ensuring the next deployment performs a complete image rebuild from the Dockerfiles.
+*Note:* The -v flag removes persistent volumes, including Moodle database data. The --rmi all option removes deployment images, forcing a complete rebuild during the next deployment.
+ 

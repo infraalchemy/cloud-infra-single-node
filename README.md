@@ -1,31 +1,16 @@
 # Moodle Infrastructure Project
+Moodle was selected as the application workload because it represents a realistic stateful, multi-tier platform requiring application runtime configuration, database persistence, storage management, and network routing.
+
 
 ### Docker • Kubernetes • Terraform • Google Cloud
 
-This repository documents the evolution of a Moodle deployment from docker-compose running on Google Cloud Compute Engine to a local Kubernetes cluster using KinD. Additional exploration covers Terraform infrastructure provisioning and GitHub Actions authentication with Google Cloud as future automation capabilities.
+# Moodle Infrastructure Project
 
-I chose Moodle because it is a stateful, multi-tier application that exercises networking, storage, ingress, initialization, and persistent data. Building the same application across multiple deployment models has provided hands-on experience with modern DevOps and cloud infrastructure practices.
+# Moodle Infrastructure Project
 
-## Technical Architecture
+Moodle was selected as the application workload because it represents a realistic stateful, multi-tier platform requiring application runtime configuration, database persistence, storage management, networking, and deployment automation.
 
-## Project Documentation
-
-* 📄 **[GCP Terraform Deployment Guide](./docs/gcp_terraform_deploy.md)**  
-  Provision the Google Cloud infrastructure and virtual machine required for the project.
-
-* 📄 **[Phase 1 – docker-compose Deployment Guide](./docs/p1_docker_deploy.md)**  
-  Build and deploy the containerized Moodle environment on Google Compute Engine.
-
-* 📄 **[Phase 1 – docker-compose Post-Mortem](./docs/p1_post_mortem.md)**  
-  Troubleshooting notes, lessons learned, and deployment challenges encountered during the docker-compose implementation.
-
-* 📄 **[Phase 2 – Kubernetes (KinD) Deployment Guide](./docs/p2_K8_deploy.md)**  
-  Deploy the Moodle application stack to a local Kubernetes cluster using KinD.
-
-* 📄 **[Phase 2 – Kubernetes (KinD) Post-Mortem](./docs/p2_post_mortem.md)**  
-  Troubleshooting notes covering Kubernetes networking, ingress, storage, and scheduling issues.
-  
----
+This repository documents the evolution of a Moodle deployment from Docker Compose running on Google Cloud Compute Engine to a local Kubernetes cluster using KinD. Additional exploration includes Terraform infrastructure provisioning and GitHub Actions authentication with Google Cloud as future automation capabilities.
 
 
 ## Repository Structure
@@ -106,7 +91,6 @@ To keep the repository clean and easy to navigate, the technical operational det
 
 * 📄 **[P2 Kubernetes Post-Mortem](./p2_post_mortem.md)** (Kubernetes / KinD): Troubleshooting notes covering Kubernetes networking, ingress, storage, scheduling, and deployment issues.
 
-* 📄 **[GCP Terraform Deployment Guide](./gcp_terraform_Deploy.md)** (Terraform / GCP): Provision the Google Cloud infrastructure required for the workload, including VM creation and deployment automation.
 ---
 
 # Cloud Infrastructure Progression: My Project Journey
@@ -117,9 +101,9 @@ This project follows the evolution of the same Moodle application through increa
 ### Goal
 Build and run a complete Moodle stack using containerized services on cloud infrastructure.
 ### Architecture & Implementation
-I began by containerizing the core application layers and managing them as isolated workloads (Nginx, PHP-FPM, MySQL) on a single virtual host interface. The stack was deployed on a production-grade Linux VM instance (Compute Engine) running natively on Google Cloud. 
+I began by containerizing the core application layers and managing them as isolated workloads (Nginx, PHP-FPM, MySQL) on a single virtual host interface. The stack was deployed on a Linux Compute Engine VM running on Google Cloud. 
 ### Results & Skills Mastered
-Created a working containerized Moodle environment. Engineered private, isolated bridge networks inside docker-compose so separate container runtimes could communicate securely on the live host instance. Created a working containerized Moodle environment with isolated Docker networking, persistent storage, resource configuration, and cloud firewall rules. This established the foundation for migrating the application into Kubernetes.
+Built and deployed a working containerized Moodle environment with isolated Docker networking, persistent storage, resource configuration, and cloud firewall integration. This established the foundation for migration into Kubernetes.
 
 
 ## Phase 2 – Local Cluster Orchestration & Debugging (Kubernetes with KinD)
@@ -128,7 +112,7 @@ Migrate the Docker-based Moodle deployment into a local KinD Kubernetes cluster 
 ### Architecture & Implementation
 The Docker-based Moodle deployment was migrated into Kubernetes by combining custom container images with declarative Kubernetes objects (Deployments, ClusterIP Services, Persistent Volume Claims, Secrets, ConfigMaps, initContainers, and Ingress routing rules). 
 ### Results & Skills Mastered
-Successfully deployed Moodle as a multi-tier Kubernetes application running locally on KinD within Windows 11/WSL2. Operating locally exposed a number of Windows, Docker, and Kubernetes integration edge cases that required deep-dive troubleshooting. I diagnosed and resolved core engineering bottlenecks, including cross-container network locks, proxy timeout limits, and ingress-to-node scheduling dependencies.
+Successfully deployed Moodle as a multi-tier Kubernetes application running locally on KinD within Windows 11/WSL2. Operating locally exposed a number of Windows, Docker, and Kubernetes integration edge cases that required detailed troubleshooting. I diagnosed and resolved core engineering bottlenecks, including cross-container network locks, proxy timeout limits, and ingress-to-node scheduling dependencies.
 
 
 ## Phase 3 – Cloud Infrastructure Automation (Future Work)
