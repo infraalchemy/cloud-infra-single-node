@@ -77,10 +77,10 @@ Configure kubectl context:
 kind export kubeconfig --name lab
 ```
 
-Expected context:
-```text
-* kind-lab
-```
+	Expected context:
+	```text
+	Set kubectl context to "kind-lab"
+	```
 
 Verify cluster nodes:
 ```bash
@@ -207,7 +207,7 @@ Deploy the ingress controller:
 kubectl apply -f ingress-nginx.yaml
 ```
 
-Wait for the ingress controller:
+Wait for the ingress controller status 1/1:
 ```bash
 kubectl get pods -n ingress-nginx -w
 ```
