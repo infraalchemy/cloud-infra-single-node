@@ -2,9 +2,13 @@
 
 ### Docker • Kubernetes • Terraform • Google Cloud
 
-Moodle was selected because it represents a realistic, stateful application with multiple moving parts. It requires application configuration, database persistence, storage management, networking, and deployment automation.
+Moodle was selected as the application workload because it represents a realistic, stateful architecture with multiple interconnected components, including application services, database persistence, shared storage, networking, and deployment automation.
 
-This repository documents my journey deploying the same application across different environments. I started with Docker Compose on a Google Cloud VM, migrated the workload into a local Kubernetes cluster using KinD, and then deployed it to Google Kubernetes Engine (GKE) using Terraform and Kustomize. Future work includes GitHub Actions integration and Google Cloud authentication using Workload Identity Federation.
+This repository demonstrates the progressive evolution of the same application across increasingly sophisticated deployment models. The architecture progresses from Docker Compose on a Google Cloud VM, to a multi-node local Kubernetes environment using KinD, and then to Google Kubernetes Engine (GKE) using Terraform and Kustomize.
+
+Each phase builds on the previous architecture, introducing additional capabilities in container orchestration, persistent storage, networking, cloud infrastructure, security, and automation.
+
+The final stage of Phase 3 introduces GitHub Actions CI/CD and Google Cloud Workload Identity Federation (OIDC) to provide secure, automated infrastructure and application delivery.
 
 ---
 
@@ -134,18 +138,18 @@ To keep the repository organized, deployment guides and troubleshooting notes ar
 
 ---
 
-# Cloud Infrastructure Progression: My Project Journey
-
-Rather than building separate labs, I chose to evolve the same application through different deployment models. Each phase introduced new challenges and provided a better understanding of how infrastructure, networking, storage, and automation work together.
+# Infrastructure Evolution
 
 ## Phase 1 – Containerized Moodle Deployment on GCP
 
 ### Goal
 Build and run a complete Moodle stack using containerized services on cloud infrastructure.
+
 The application was deployed on a Linux Compute Engine VM running on Google Cloud using separate containers for Nginx, PHP-FPM, and MySQL. The deployment included Docker networking, persistent storage, resource configuration, and cloud firewall integration.
 
 ### Result
-Successfully deployed a working containerized Moodle environment. This provided the foundation for migrating the application into Kubernetes.
+
+Successfully deployed a working containerized Moodle environment, establishing the application architecture and persistent data model that would be carried forward into Kubernetes.
 
 ---
 
@@ -157,7 +161,7 @@ Migrate the Docker-based Moodle deployment into a local KinD Kubernetes cluster 
 The application was migrated using Kubernetes resources including Deployments, Services, Persistent Volume Claims, Secrets, ConfigMaps, initContainers, and Ingress routing.
 
 ### Result
-Successfully deployed the Moodle application on a multi-node KinD Kubernetes cluster within Windows 11/WSL2, confirming full web access and file-upload functionality.
+Successfully deployed the Moodle application on a multi-node KinD Kubernetes cluster within Windows 11/WSL2, validating Kubernetes orchestration, persistent storage, ingress routing, workload recovery, web access, and file-upload functionality.
 
 ---
 
@@ -165,15 +169,17 @@ Successfully deployed the Moodle application on a multi-node KinD Kubernetes clu
 *Recreate testing and documentation in progress*
 
 ### Goal
-Migrate the Kubernetes-based Moodle deployment from the local KinD environment to Google Kubernetes Engine (GKE) to validate cloud infrastructure provisioning, persistent storage, ingress routing, SSL, and environment-specific deployment workflows.
+Migrate the Kubernetes-based Moodle deployment from the local KinD environment to Google Kubernetes Engine (GKE) to validate cloud infrastructure provisioning, persistent storage, ingress routing, HTTPS, container image management, and environment-specific deployment workflows.
 
 The application was deployed using Kubernetes resources including Deployments, Services, Persistent Volume Claims, Secrets, ConfigMaps, initContainers, and GKE Ingress routing. Infrastructure and environment configuration were managed using Terraform and Kustomize.
 
 ### Result
-Successfully deployed the Moodle application on a multi-node GKE cluster with persistent RWX/Filestore storage, GKE Ingress, a global static IP, and Google-managed HTTPS certificates for secure external access. The deployment uses separate Kubernetes components for MySQL, PHP, Nginx, and persistent storage, with Terraform and Kustomize supporting repeatable infrastructure and environment-specific configuration.
+Successfully deployed the Moodle application on a multi-node GKE cluster with persistent RWX/Filestore storage, Artifact Registry for container images, GKE Ingress, a global static IP, custom domain and DNS configuration, and Google-managed HTTPS certificates for secure external access.
+
+The deployment uses separate Kubernetes components for MySQL, PHP, Nginx, and persistent storage, with Terraform and Kustomize supporting repeatable infrastructure provisioning and environment-specific configuration.
 
 ### Next Steps
-Integrate GitHub Actions CI/CD pipelines and implement Google Cloud Workload Identity Federation (OIDC) for secure, passwordless authentication.
+Complete Phase 3 by integrating GitHub Actions CI/CD and Google Cloud Workload Identity Federation (OIDC) for secure, passwordless authentication and automated infrastructure and application delivery.
 
 ---
 
