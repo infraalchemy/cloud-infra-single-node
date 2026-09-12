@@ -1,3 +1,4 @@
+
 # Phase 3 Deployment Runbook: Cloud Kubernetes Deployment with Google Kubernetes Engine (GKE)
 
 This guide documents the complete process used to build, deploy, validate, and rebuild a cloud containerized Moodle environment. The entire architecture runs within a managed multi-node Kubernetes cluster provisioned via Google Kubernetes Engine (GKE).
