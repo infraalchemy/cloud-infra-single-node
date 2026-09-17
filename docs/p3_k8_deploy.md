@@ -708,6 +708,21 @@ https://<Domain Name>
 
 ---
 
+## Image title incorrect
+```bash
+notepad docker/php/Dockerfile
+```
+
+Change to:
+FROM php:8.2-fpm
+
+Verify
+```bash
+grep "^FROM" docker/php/Dockerfile
+```
+---
+
+
 # Maintenance: Refresh Cluster Credentials
 
 Refresh the GKE cluster credentials if the local kubectl credentials expire or access to the GKE control plane is lost:

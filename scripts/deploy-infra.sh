@@ -9,11 +9,13 @@ echo "=== Full Moodle GKE Deployment ==="
 echo
 
 echo "1. Provisioning GCP infrastructure..."
+
 terraform -chdir=terraform/gcp-gke init
+
 terraform -chdir=terraform/gcp-gke apply \
   -var="project_id=${PROJECT_ID}" \
   -auto-approve
-  
+
 echo
 echo "GKE infrastructure ready."
 
@@ -28,27 +30,9 @@ gcloud container clusters get-credentials "$CLUSTER_NAME" \
   --project "$PROJECT_ID"
 
 echo
+echo "3. Verifying GKE nodes..."
 
-
-echo "3. Configuring Docker authentication..."
-
-gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+kubectl get nodes
 
 echo
-echo "4. Building PHP image..."
-
-IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/moodle-repo/custom-php:8.2"
-
-docker build \
-  -t "$IMAGE" \
-  docker/php
-
-echo
-echo "5. Pushing PHP image..."
-
-docker push "$IMAGE"
-
-echo
-
-echo "PHP image built and pushed."
 

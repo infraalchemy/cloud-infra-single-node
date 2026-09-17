@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+# Define project variables needed for the Docker image path
+PROJECT_ID="civic-champion-439320-a5"
+REGION="northamerica-northeast2"
+
 echo "=== Moodle GKE Deployment ==="
 echo
 
@@ -38,6 +42,26 @@ echo "Checking MySQL..."
 kubectl get pods -l app=mysql
 
 echo "MySQL deployment finished."
+
+
+# ==============================================================================
+# ADDED: BUILD & PUSH CUSTOM PHP IMAGE
+# This happens after MySQL/Storage are running but BEFORE the PHP workload deploys
+# ==============================================================================
+echo "1. Configuring Docker authentication..."
+gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+
+echo "1. Building PHP image..."
+IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/moodle-repo/custom-php:8.2"
+
+docker build \
+  -t "$IMAGE" \
+  docker/php
+
+echo "1. Pushing PHP image..."
+docker push "$IMAGE"
+
+echo "PHP image built and pushed successfully."
 
 
 echo "1. Deploying PHP..."
