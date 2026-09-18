@@ -1,14 +1,12 @@
-# Moodle Infrastructure Project
+Moodle serves as the stateful application workload for a progressive infrastructure engineering project spanning containerization, Kubernetes orchestration, cloud infrastructure, and automated delivery.
 
-### Docker • Kubernetes • Terraform • Google Cloud
+Rather than using a pre-built Moodle image, the application is separated into Nginx, PHP-FPM, and MySQL components with clearly defined responsibilities. Nginx provides the web-facing HTTP layer and routes PHP requests to a custom PHP-FPM application runtime, while MySQL provides the database layer backed by persistent storage.
 
-Moodle was selected as the application workload because it represents a realistic, stateful architecture with multiple interconnected components, including application services, database persistence, shared storage, networking, and deployment automation.
+The same application architecture is progressively evolved across increasingly sophisticated deployment models:
 
-This repository demonstrates the progressive evolution of the same application across increasingly sophisticated deployment models. The architecture progresses from Docker Compose on a Google Cloud VM, to a multi-node local Kubernetes environment using KinD, and then to Google Kubernetes Engine (GKE) using Terraform and Kustomize.
+**Docker Compose on GCP → Local Multi-node KinD → Multi-node GKE → AWS/EKS (planned)**
 
-Each phase builds on the previous architecture, introducing additional capabilities in container orchestration, persistent storage, networking, cloud infrastructure, security, and automation.
-
-The final stage of Phase 3 introduces GitHub Actions CI/CD and Google Cloud Workload Identity Federation (OIDC) to provide secure, automated infrastructure and application delivery.
+Each phase builds on the previous implementation while introducing additional capabilities in orchestration, persistent state management, networking and ingress, infrastructure as code, cloud services, security, recovery validation, and deployment automation.
 
 ---
 
@@ -32,7 +30,17 @@ All infrastructure provisioning and application deployments were initiated from 
 
 
 ```text
-├── .github/                              # GitHub Actions workflows
+├── .github/
+│   └── workflows/
+│       ├── gcp-gke-deploy.yaml          # GCP/GKE CI/CD deployment workflow
+│       └── aws-eks-deploy.yaml          # AWS/EKS CI/CD deployment workflow (in development)
+│
+├── scripts/
+│   ├── deploy-gke.sh                    # GKE application deployment orchestration
+│   ├── deploy-infra.sh                  # Infrastructure deployment automation
+│   ├── destroy-all.sh                   # Environment teardown automation
+│   ├── verify-all.sh                    # Linux deployment validation
+│   └── verify-all-win.sh                # Windows deployment validation
 │
 ├── docs/                                 # Engineering documentation
 │   ├── gcp_terraform_deploy.md           # GCP VM/infrastructure provisioning guide
@@ -140,54 +148,98 @@ To keep the repository organized, deployment guides and troubleshooting notes ar
 
 # Infrastructure Evolution
 
+This project demonstrates the progressive design and evolution of a stateful application platform across containerized, Kubernetes, and cloud-native infrastructure.
+
+Rather than treating each environment as a separate deployment, the same Moodle application architecture is carried through every phase—from Docker Compose on a Google Cloud VM, to a customized multi-node KinD cluster, to a multi-node GKE platform, and ultimately to AWS/EKS. Each phase introduces additional infrastructure capabilities while preserving the application's core architecture and persistent data requirements.
+
+The project covers application decomposition, containerization, Kubernetes orchestration, persistent storage, networking and ingress, infrastructure as code, cloud services, identity and security, and CI/CD automation.
+
+
 ## Phase 1 – Containerized Moodle Deployment on GCP
 
 ### Goal
-Build and run a complete Moodle stack using containerized services on cloud infrastructure.
+Design and deploy the initial stateful application architecture on Google Cloud, establishing the container, networking, and persistence model that would become the foundation for the later Kubernetes implementations.
 
-The application was deployed on a Linux Compute Engine VM running on Google Cloud using separate containers for Nginx, PHP-FPM, and MySQL. The deployment included Docker networking, persistent storage, resource configuration, and cloud firewall integration.
+Instead of using a pre-built Moodle container, the application was decomposed into separate services with clearly defined responsibilities. Nginx provides the web-facing HTTP layer and routes PHP requests to a custom PHP-FPM application runtime. MySQL provides the database layer, backed by persistent storage to preserve database state across container recreation. Docker Compose defines the service relationships, internal networking, persistent storage, and application configuration.
+
+Terraform provisioned the underlying Linux Compute Engine infrastructure, including the VM and supporting network and firewall configuration.
 
 ### Result
+Built and deployed a complete stateful Moodle stack on Google Cloud with independently managed application, web, and database services.
 
-Successfully deployed a working containerized Moodle environment, establishing the application architecture and persistent data model that would be carried forward into Kubernetes.
+The deployment established the core architecture used throughout the project: separation of application components, custom image construction, persistent application and database data, service networking, infrastructure provisioning, and external web access.
+
+Rather than being replaced in later phases, this architecture became the baseline that was progressively adapted to Kubernetes and cloud-native infrastructure.
 
 ---
 
-## Phase 2 – Local Moodle Kubernetes Cluster (KinD)
+## Phase 2 – Multi-Node Kubernetes Deployment with KinD
 
 ### Goal
-Migrate the Docker-based Moodle deployment into a local KinD Kubernetes cluster to validate container orchestration, networking, storage, ingress routing, and deployment workflows.
+Transform the containerized architecture from Phase 1 into a Kubernetes-native deployment while preserving the same separation between the Nginx web layer, PHP-FPM application runtime, MySQL database, and persistent application data.
 
-The application was migrated using Kubernetes resources including Deployments, Services, Persistent Volume Claims, Secrets, ConfigMaps, initContainers, and Ingress routing.
+A customized local multi-node KinD cluster was built with a control-plane and worker node, creating a more realistic Kubernetes environment than a default single-node cluster. Application components were translated from Docker Compose services into Kubernetes Deployments and Services, using Persistent Volume Claims, Secrets, ConfigMaps, and an init container for storage, configuration, credentials, and application initialization.
+
+Ingress was deliberately scheduled on the worker node and integrated with the host network to provide external HTTPS access from Windows 11/WSL2 into the Kubernetes environment.
 
 ### Result
-Successfully deployed the Moodle application on a multi-node KinD Kubernetes cluster within Windows 11/WSL2, validating Kubernetes orchestration, persistent storage, ingress routing, workload recovery, web access, and file-upload functionality.
+Built and validated a complete stateful application stack on a multi-node Kubernetes cluster, including:
+
+* **Multi-node cluster architecture** – separate control-plane and worker node with workload and ingress placement configured on the worker
+* **Kubernetes workload decomposition** – Nginx, PHP-FPM, and MySQL implemented as independently managed workloads and services
+* **Persistent state management** – application and database data retained across pod deletion and recreation
+* **Application initialization** – init container prepares Moodle application files on persistent storage before runtime startup
+* **Configuration and secrets management** – Kubernetes ConfigMaps and Secrets separate application configuration and credentials from workloads
+* **Ingress and network routing** – external traffic routed through Kubernetes Ingress to Nginx and then internally to PHP-FPM
+* **Workload recovery validation** – pods deliberately recreated to confirm Kubernetes recovery behavior and persistence
+* **End-to-end application validation** – verified web access, authentication, database connectivity, HTTPS access, and persistent file uploads
+
+Phase 2 demonstrated that the architecture established with Docker Compose could be successfully decomposed into Kubernetes resources while maintaining application functionality and persistent state. It also established the Kubernetes architecture that would be carried forward into GKE in Phase 3.
 
 ---
 
-## Phase 3 – Moodle Kubernetes Deployment on GKE
-*Recreate testing and documentation in progress*
+## Phase 3 – Production-Style Kubernetes Platform on GKE
 
 ### Goal
-Migrate the Kubernetes-based Moodle deployment from the local KinD environment to Google Kubernetes Engine (GKE) to validate cloud infrastructure provisioning, persistent storage, ingress routing, HTTPS, container image management, and environment-specific deployment workflows.
+Evolve the architecture proven in the local multi-node KinD environment into a fully integrated GKE platform. The objective was not simply to run Moodle on Kubernetes, but to carry the same stateful application architecture into Google Cloud while solving the infrastructure, storage, networking, security, recovery, and deployment requirements of a cloud Kubernetes environment.
 
-The application was deployed using Kubernetes resources including Deployments, Services, Persistent Volume Claims, Secrets, ConfigMaps, initContainers, and GKE Ingress routing. Infrastructure and environment configuration were managed using Terraform and Kustomize.
+The platform maintains clearly separated Nginx, PHP-FPM, and MySQL workloads rather than relying on a pre-built Moodle image. Nginx provides the web-facing HTTP layer, receiving application traffic and routing PHP requests to PHP-FPM over the Kubernetes service network. A custom PHP-FPM image provides the Moodle application runtime, while MySQL provides the database layer, backed by persistent storage to preserve database state across pod recreation. The init container prepares the Moodle application files on shared persistent storage before the application starts, while persistent application storage preserves application and user data across workload recreation.
+
+Terraform provisions the GKE and supporting Google Cloud infrastructure, while Kustomize manages reusable and environment-specific Kubernetes configuration.
 
 ### Result
-Successfully deployed the Moodle application on a multi-node GKE cluster with persistent RWX/Filestore storage, Artifact Registry for container images, GKE Ingress, a global static IP, custom domain and DNS configuration, and Google-managed HTTPS certificates for secure external access.
+Built, integrated, and validated an end-to-end multi-node GKE platform spanning application workloads, persistent storage, cloud networking, infrastructure automation, identity, security, and recovery:
 
-The deployment uses separate Kubernetes components for MySQL, PHP, Nginx, and persistent storage, with Terraform and Kustomize supporting repeatable infrastructure provisioning and environment-specific configuration.
+* **Designed the application architecture** – separate Nginx, PHP-FPM, and MySQL workloads with clearly defined responsibilities rather than a pre-packaged Moodle deployment
+* **Built and published a custom PHP-FPM image** – application runtime packaged and managed through Google Artifact Registry
+* **Implemented stateful Kubernetes storage** – persistent application and database storage, including shared RWX storage backed by Google Cloud Filestore
+* **Automated application initialization** – init container prepares Moodle files on shared persistent storage before application startup
+* **Validated workload recovery and data persistence** – deliberately deleted and recreated application workloads to confirm Kubernetes recovery while preserving application configuration, database state, and uploaded files
+* **Provisioned cloud infrastructure with Terraform** – GKE and supporting infrastructure defined as code for repeatable environment creation
+* **Structured Kubernetes configuration with Kustomize** – reusable base resources separated from environment-specific configuration
+* **Integrated cloud networking** – GKE Ingress, Google Cloud load balancing, and a reserved global static IP provide the external traffic path into the application
+* **Established a secure public endpoint** – custom domain, DNS configuration, and Google-managed TLS certificates provide HTTPS access
+* **Implemented Kubernetes lifecycle management** – Deployments, Services, PVCs, Secrets, ConfigMaps, health checks, rollout monitoring, and deployment validation
+* **Implemented keyless CI/CD authentication** – GitHub Actions authenticates to Google Cloud through Workload Identity Federation (OIDC), eliminating stored long-lived Google Cloud credentials
 
-### Next Steps
-Complete Phase 3 by integrating GitHub Actions CI/CD and Google Cloud Workload Identity Federation (OIDC) for secure, passwordless authentication and automated infrastructure and application delivery.
+### Engineering Outcome
+The result is more than a Moodle deployment. The same stateful application has been progressively engineered from Docker Compose, through a customized multi-node local Kubernetes cluster, and into an integrated cloud Kubernetes platform.
+
+The GKE implementation demonstrates not only successful deployment, but also **system integration and operational behavior**: application components communicate across defined service boundaries, state survives workload replacement, Kubernetes restores deleted workloads, external traffic traverses the complete ingress path, and the application remains functional after recovery.
+
+Across the three phases, the project demonstrates system decomposition, component integration, state and lifecycle management, infrastructure as code, cloud networking, secure identity, failure recovery, and repeatable deployment practices.
+
+### Current Work
+Complete and validate the end-to-end GitHub Actions deployment workflow, including infrastructure provisioning, container image build and push, Kubernetes deployment, rollout verification, and end-to-end application validation.
 
 ---
 
-## Phase 4 – Moodle Kubernetes Deployment on AWS
+## Phase 4 – Kubernetes Deployment on AWS
 
 ### Goal
-Extend the platform to AWS to demonstrate cloud portability and the ability to apply the same infrastructure and Kubernetes deployment patterns across cloud providers.
+Extend the same application architecture to AWS to demonstrate cloud portability and apply the infrastructure and Kubernetes patterns developed in GCP to a second cloud provider.
 
 ### Planned Work
-Future enhancements include Terraform-based AWS infrastructure provisioning, deployment of the Kubernetes application to Amazon Elastic Kubernetes Service (EKS), AWS identity and access management, and integration with AWS-native networking, storage, and monitoring services.
+Provision AWS infrastructure with Terraform and deploy the application to Amazon EKS while integrating AWS-native identity, networking, persistent storage, load balancing, DNS, TLS, and monitoring services.
 
+The application architecture and Kubernetes workload separation will remain consistent, allowing the AWS implementation to demonstrate how the same platform design can be adapted across cloud providers.
