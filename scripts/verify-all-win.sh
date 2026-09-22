@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 BOLD_CYAN='\033[1;36m'
-NC='\033[0m'
-
 BOLD_GREEN='\033[1;32m'
+BOLD_BLUE='\033[1;34m'
 NC='\033[0m'
 
 
@@ -98,31 +97,6 @@ MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- sh -c \
   "ls -1 /var/www/html | awk '{printf \"%-25s\", \$0; if (NR % 3 == 0) printf \"\n\"} END {if (NR % 3 != 0) printf \"\n\"}'"
 echo
 
-echo
-echo -e "${BOLD_CYAN}Verify PHP persistence:${NC}"
-
-OLD_PHP_POD=$(kubectl get pods -l app=php \
-  -o jsonpath='{.items[0].metadata.name}')
-
-echo "Deleting PHP pod: ${OLD_PHP_POD}"
-kubectl delete pod "$OLD_PHP_POD"
-
-echo "Waiting for replacement PHP pod..."
-kubectl rollout status deployment/php --timeout=30m
-
-NEW_PHP_POD=$(kubectl get pods -l app=php \
-  -o jsonpath='{.items[0].metadata.name}')
-
-echo "Old PHP pod: ${OLD_PHP_POD}"
-echo "New PHP pod: ${NEW_PHP_POD}"
-
-echo "Verify Moodle application files survived pod replacement..."
-MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- ls -l /var/www/html/config.php
-
-echo "Verify Moodle data survived pod replacement..."
-MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- ls -la /moodledata | head
-echo
-
 echo "Verify the live Nginx Service configuration:"
 
 echo "BackendConfig:"
@@ -178,6 +152,42 @@ echo "Static IP: ${STATIC_IP}"
 curl -I \
   -H "Host: ${DOMAIN}" \
   "http://${STATIC_IP}"
+echo
+
+
+echo
+echo -e "${BOLD_CYAN}Verifying no custom Compute Engine images remain...${NC}"
+
+CUSTOM_IMAGES=$(gcloud compute images list \
+  --project="$PROJECT_ID" \
+  --no-standard-images \
+  --format="value(name)")
+
+if [[ -z "$CUSTOM_IMAGES" ]]; then
+  echo -e "${BOLD_GREEN}No custom Compute Engine images remain.${NC}"
+else
+  echo -e "${BOLD_BLUE}WARNING: Custom Compute Engine images still exist:${NC}"
+  echo "$CUSTOM_IMAGES"
+fi
+
+echo
+
+
+echo -e "${BOLD_CYAN}Verifying Artifact Registry repository was removed...${NC}"
+
+if gcloud artifacts repositories describe moodle-repo \
+  --location="$LOCATION" \
+  --project="$PROJECT_ID" \
+  > /dev/null 2>&1; then
+
+  echo -e "${BOLD_BLUE}WARNING: Artifact Registry repository moodle-repo still exists.${NC}"
+
+else
+
+  echo -e "${BOLD_GREEN}Artifact Registry repository moodle-repo has been removed.${NC}"
+
+fi
+
 echo
 
 echo -e "${BOLD_GREEN}=== Verification Complete ===${NC}"

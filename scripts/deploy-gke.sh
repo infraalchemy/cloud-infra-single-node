@@ -7,10 +7,10 @@ PROJECT_ID="civic-champion-439320-a5"
 REGION="northamerica-northeast2"
 
 BOLD_CYAN='\033[1;36m'
+BOLD_GREEN='\033[1;32m'
+BOLD_BLUE='\033[1;34m'
 NC='\033[0m'
 
-BOLD_GREEN='\033[1;32m'
-NC='\033[0m'
 
 echo -e "${BOLD_GREEN}=== Moodle GKE Deployment ===${NC}"
 echo
@@ -33,10 +33,10 @@ kubectl wait \
   pvc/mysql-pvc \
   --timeout=2m
 
-echo "Checking storage..."
+echo -e "${BOLD_CYAN}Checking storage...${NC}"
 kubectl get pvc
 
-echo -e "${BOLD_CYAN}Storage deployment finished:${NC}"
+echo -e "${BOLD_BLUE}Storage deployment finished:${NC}"
 echo
 
 echo
@@ -54,11 +54,11 @@ kubectl rollout status deployment/mysql --timeout=3m
 echo "Checking MySQL..."
 kubectl get pods -l app=mysql
 
-echo -e "${BOLD_CYAN}MySQL deployment finished:${NC}"
+echo -e "${BOLD_BLUE}MySQL deployment finished:${NC}"
 echo
 
 # ================================================================================
-# ADDED: BUILD & PUSH CUSTOM PHP IMAGE
+# BUILD & PUSH CUSTOM PHP IMAGE
 # This happens after MySQL/Storage are running but BEFORE the PHP workload deploys
 # ================================================================================
 echo
@@ -76,7 +76,7 @@ docker build --no-cache \
 echo -e "${BOLD_CYAN}Pushing PHP image...:${NC}"
 docker push "$IMAGE"
 
-echo -e "${BOLD_CYAN}PHP image built and pushed successfully:${NC}"
+echo -e "${BOLD_BLUE}PHP image built and pushed successfully:${NC}"
 
 echo
 echo -e "${BOLD_CYAN}Deploying PHP...:${NC}"
@@ -92,10 +92,10 @@ kubectl rollout status deployment/php --timeout=30m
 echo "Checking PHP..."
 kubectl get pods -l app=php
 
-echo -e "${BOLD_CYAN}PHP deployment finished:${NC}"
+echo -e "${BOLD_BLUE}PHP deployment finished:${NC}"
 
 echo
-echo "Deploying Nginx..."
+echo -e "${BOLD_CYAN}Deploying Nginx...${NC}"
 
 # Relax Kustomize restrictions because the Nginx Kustomization references files outside its directory
 kubectl kustomize \
@@ -105,17 +105,21 @@ kubectl kustomize \
 echo "Waiting for Nginx..."
 kubectl rollout status deployment/nginx --timeout=5m
 
+echo
+
 echo "Checking nginx..."
 kubectl get pods -l app=nginx
 
-echo -e "${BOLD_CYAN}Nginx deployment finished:${NC}"
+echo -e "${BOLD_BLUE}Nginx deployment finished:${NC}"
 
 echo
-echo -e "${BOLD_CYAN} Deploying GKE Ingress:${NC}"
+echo -e "${BOLD_CYAN}Deploying GKE Ingress:${NC}"
 # Relax Kustomize restrictions because GKE Ingress Kustomization references files outside its directory
 kubectl kustomize \
   --load-restrictor LoadRestrictionsNone \
   kubernetes/gcp-gke/overlays/ | kubectl apply -f -
+
+echo
 
 echo "Waiting for GKE Ingress address..."
 
@@ -127,7 +131,7 @@ kubectl wait \
 echo "Checking GKE Ingress..."
 kubectl get ingress moodle-ingress
 
-echo -e "${BOLD_CYAN}GKE Ingress deployment finished:${NC}"
+echo -e "${BOLD_BLUE}GKE Ingress deployment finished:${NC}"
 
 echo
 echo -e "${BOLD_GREEN}=== Moodle GKE Deployment ===${NC}"
