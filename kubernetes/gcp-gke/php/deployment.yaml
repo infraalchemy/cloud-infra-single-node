@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: php
 spec:
-  progressDeadlineSeconds: 900
+  progressDeadlineSeconds: 1800
   replicas: 1
   selector:
     matchLabels:
@@ -22,16 +22,44 @@ spec:
             - -c
             - |
               set -e
+
+              echo "Installing init-container tools..."
               apk add --no-cache wget tar
+              echo "Tools installed."
+
               cd /var/www/html
+
               if [ ! -f index.php ]; then
-                 # FIXED: Uses the explicit direct tarball url with redirect forcing flags
+                echo "Moodle files not found. Downloading Moodle..."
+
                 wget --max-redirect=5 -O moodle.tgz "https://download.moodle.org/download.php/direct/stable404/moodle-latest-404.tgz"
+
+                echo "Moodle download complete."
+
+                echo "Extracting Moodle archive..."
                 tar -xzf moodle.tgz
+                echo "Moodle archive extracted."
+
+                echo "Copying Moodle application files..."
                 cp -a moodle/. .
+                echo "Moodle application files copied."
+
+                echo "Cleaning up Moodle installation files..."
+                rm -rf moodle moodle.tgz
+                echo "Moodle installation files cleaned up."
+              else
+                echo "Existing Moodle application files found. Skipping download and extraction."
               fi
+
+              echo "Setting ownership on /var/www/html..."
               chown -R 33:33 /var/www/html
+              echo "/var/www/html ownership complete."
+
+              echo "Setting ownership on /moodledata..."
               chown -R 33:33 /moodledata
+              echo "/moodledata ownership complete."
+
+              echo "Moodle init container completed successfully."
           volumeMounts:
             - name: moodle-code
               mountPath: /var/www/html
