@@ -32,7 +32,3 @@ resource "google_artifact_registry_repository" "moodle" {
   description   = "Docker repository for Moodle application images"
   format        = "DOCKER"
 }
-
-resource "google_compute_global_address" "moodle" {
-  name = "moodle-static-ip"
-}

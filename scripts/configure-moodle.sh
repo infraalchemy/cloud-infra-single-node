@@ -5,6 +5,7 @@ set -euo pipefail
 BOLD_CYAN='\033[1;36m'
 BOLD_GREEN='\033[1;32m'
 BOLD_BLUE='\033[1;34m'
+BOLD_RED='\033[1;31m'
 NC='\033[0m'
 
 
@@ -237,8 +238,7 @@ echo -e "${BOLD_CYAN}10. Verifying PHP persistence...${NC}"
 OLD_PHP_POD=$(kubectl get pods -l app=php \
   -o jsonpath='{.items[0].metadata.name}')
 
-echo
-echo "Deleting PHP pod: ${OLD_PHP_POD}"
+echo -e "${BOLD_BLUE}Deleting PHP pod: ${OLD_PHP_POD}${NC}"
 
 kubectl delete pod "$OLD_PHP_POD"
 
@@ -254,7 +254,7 @@ echo -e "${BOLD_BLUE}Old PHP pod: ${OLD_PHP_POD}${NC}"
 echo -e "${BOLD_BLUE}New PHP pod: ${NEW_PHP_POD}${NC}"
 
 echo
-echo -e "${BOLD_BLUE}Verify Moodle application files survived pod replacement...${NC}"
+echo -e "${BOLD_CYAN}Verify Moodle application files survived pod replacement...${NC}"
 
 MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
   ls -l /var/www/html/config.php
@@ -282,12 +282,12 @@ echo -e "${BOLD_CYAN}12. Testing domain routing over HTTP...${NC}"
 
 if curl -fsSI --max-time 15 "http://${DOMAIN_NAME}" > /dev/null; then
 
-  echo -e "${BOLD_GREEN}HTTP domain routing is responding successfully.${NC}"
+  echo -e "${BOLD_BLUE}HTTP domain routing is responding successfully.${NC}"
   curl -I "http://${DOMAIN_NAME}"
 
 else
 
-  echo -e "${BOLD_BLUE}HTTP domain routing test failed.${NC}"
+  echo -e "${BOLD_RED}HTTP domain routing test failed.${NC}"
   echo "Check DNS, static IP, Ingress, and backend health."
 
 fi
@@ -358,6 +358,6 @@ fi
 echo
 
 
-echo
-
 echo -e "${BOLD_GREEN}Moodle installation and configuration completed.${NC}"
+
+echo
