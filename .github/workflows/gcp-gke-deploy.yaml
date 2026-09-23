@@ -54,8 +54,9 @@ jobs:
         working-directory: terraform/gcp-gke
         run: terraform plan -no-color -input=false -var="project_id=${{ env.PROJECT_ID }}"
         
-      - name: Terraform test complete
-        run: echo "Terraform validation and plan completed successfully."        
+      - name: Terraform Apply
+        working-directory: terraform/gcp-gke
+        run: terraform apply -auto-approve -input=false -var="project_id=${{ env.PROJECT_ID }}"
 
       - name: Configure Artifact Registry authentication
         run: |
