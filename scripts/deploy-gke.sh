@@ -15,6 +15,26 @@ NC='\033[0m'
 echo -e "${BOLD_GREEN}=== Moodle GKE Deployment ===${NC}"
 echo
 
+# ================================================================================
+# RESOLVE / CREATE PERMANENT GLOBAL STATIC IP
+# Ensures the routing IP is secured first so the infrastructure can cleanly bind to it
+# ================================================================================
+echo -e "${BOLD_CYAN}Resolving Global Static IP for Ingress...:${NC}"
+
+IP_EXISTS=$(gcloud compute addresses list --global --filter="name=moodle-static-ip" --format="value(name)" --project "$PROJECT_ID")
+
+if [ -z "$IP_EXISTS" ]; then
+  echo "Static IP 'moodle-static-ip' not found. Reserving new global static IP..."
+  gcloud compute addresses create moodle-static-ip --global --project "$PROJECT_ID" --quiet
+  echo "Global Static IP successfully provisioned."
+else
+  echo "Permanent static IP 'moodle-static-ip' detected. Reusing existing resource."
+fi
+
+STATIC_IP_VAL=$(gcloud compute addresses describe moodle-static-ip --global --format="value(address)" --project "$PROJECT_ID")
+echo -e "${BOLD_BLUE}Deployment Target IP is: $STATIC_IP_VAL${NC}"
+echo
+
 echo
 echo -e "${BOLD_CYAN}Deploying storage...:${NC}"
 
@@ -58,8 +78,8 @@ echo -e "${BOLD_BLUE}MySQL deployment finished:${NC}"
 echo
 
 # ================================================================================
-# BUILD & PUSH CUSTOM PHP IMAGE
-# This happens after MySQL/Storage are running but BEFORE the PHP workload deploys
+# BUILD & PUSH CUSTOM PHP IMAGE FROM BASE
+# No-cache enforces a completely clean build directly on the remote pipeline runner
 # ================================================================================
 echo
 echo -e "${BOLD_CYAN}Configuring Docker authentication...:${NC}"
@@ -73,13 +93,13 @@ docker build --no-cache \
   -t "$IMAGE" \
   docker/php
 
-echo -e "${BOLD_CYAN}Pushing PHP image...:${NC}"
+echo -e "${BOLD_CYAN}Pushing PHP custom image...:${NC}"
 docker push "$IMAGE"
 
 echo -e "${BOLD_BLUE}PHP image built and pushed successfully:${NC}"
 
 echo
-echo -e "${BOLD_CYAN}Deploying PHP...:${NC}"
+echo -e "${BOLD_CYAN}Deploying PHP...${NC}"
 
 # Relax Kustomize restrictions because the PHP Kustomization references files outside its directory
 kubectl kustomize \

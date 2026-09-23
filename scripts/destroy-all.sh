@@ -99,6 +99,7 @@ gcloud container clusters list \
   --project "$PROJECT_ID"
 echo
 
+
 echo
 echo -e "${BOLD_CYAN}4. Verify persistent disks are removed:${NC}"
 gcloud compute disks list \
