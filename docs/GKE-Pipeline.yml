@@ -1,0 +1,41 @@
+
+Checking the Workload Identity in GCP Cloud Shell
+gcloud iam workload-identity-pools list \
+  --location="global" \
+  --project="civic-champion-439320-a5"
+Expected:
+displayName: GitHub Actions Pool
+name: projects/1006034492977/locations/global/workloadIdentityPools/github
+state: ACTIVE
+
+Reading your existing IAM configuration
+gcloud iam workload-identity-pools providers list \
+  --workload-identity-pool="github" \
+  --location="global" \
+  --project="civic-champion-439320-a5"
+  
+ Expected:
+ attributeCondition: assertion.repository_owner == 'infraalchemy'
+attributeMapping:
+  attribute.actor: assertion.actor
+  attribute.repository: assertion.repository
+  attribute.repository_owner: assertion.repository_owner
+  google.subject: assertion.sub
+displayName: GitHub OIDC Provider
+name: projects/1006034492977/locations/global/workloadIdentityPools/github/providers/cloud-infra-single-node
+oidc:
+  issuerUri: https://token.actions.githubusercontent.com
+state: ACTIVE
+
+The service account that GitHub Actions will impersonate
+gcloud iam service-accounts list \
+  --project="civic-champion-439320-a5"
+  
+Expected:
+DISPLAY NAME: Compute Engine default service account
+EMAIL: 1006034492977-compute@developer.gserviceaccount.com
+DISABLED: False
+
+DISPLAY NAME: GitHub Actions GKE Deployment
+EMAIL: github-actions@civic-champion-439320-a5.iam.gserviceaccount.com
+DISABLED: False  

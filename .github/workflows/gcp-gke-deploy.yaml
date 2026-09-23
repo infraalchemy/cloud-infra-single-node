@@ -39,6 +39,24 @@ jobs:
           gcloud auth list
           gcloud config get-value project
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: terraform/gcp-gke
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: terraform/gcp-gke
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: terraform/gcp-gke
+        run: terraform plan -no-color
+        
+      - name: Terraform test complete
+        run: echo "Terraform validation and plan completed successfully."        
+
       - name: Configure Artifact Registry authentication
         run: |
           gcloud auth configure-docker \
