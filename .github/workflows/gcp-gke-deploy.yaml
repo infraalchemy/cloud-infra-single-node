@@ -52,7 +52,7 @@ jobs:
 
       - name: Terraform Plan
         working-directory: terraform/gcp-gke
-        run: terraform plan -no-color
+        run: terraform plan -no-color -input=false -var="project_id=${{ env.PROJECT_ID }}"
         
       - name: Terraform test complete
         run: echo "Terraform validation and plan completed successfully."        
