@@ -90,10 +90,35 @@ jobs:
           kubectl cluster-info
           kubectl get nodes
       
+      - name: Create Kubernetes secrets
+        run: |
+          cat > kubernetes/gcp-gke/mysql/secret.yaml <<'EOF'
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: mysql-secret
+          type: Opaque
+          stringData:
+            root-password: rootpassword
+            mysql-database: moodle
+            mysql-user: moodleuser
+            moodleuser-password: moodlepassword
+          EOF
+
+          cat > kubernetes/gcp-gke/php/secret.yaml <<'EOF'
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: php-secret
+          type: Opaque
+          stringData:
+            db-password: moodlepassword
+          EOF
+
       - name: Deploy Moodle to GKE
         run: |
           bash scripts/deploy-gke.sh
-
+          
       - name: Verify Moodle deployment
         run: |
           kubectl get pods
