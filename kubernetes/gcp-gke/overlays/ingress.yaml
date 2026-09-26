@@ -3,12 +3,11 @@ kind: Ingress
 metadata:
   name: moodle-ingress
   annotations:
+    kubernetes.io/ingress.class: "gce"
     kubernetes.io/ingress.global-static-ip-name: "moodle-static-ip"
     networking.gke.io/managed-certificates: "moodle-ssl-cert"
     kubernetes.io/ingress.allow-http: "true"
-
 spec:
-  ingressClassName: "gke-l7-gxlb"
   rules:
     - host: bordercolliechronicles.ca
       http:
