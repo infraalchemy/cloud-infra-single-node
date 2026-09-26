@@ -126,3 +126,26 @@ jobs:
           kubectl get ingress moodle-ingress
 
 
+****
+Issue
+bbeyster@IzzyBabe MINGW64 ~/Projects/cloud-infra-single-node (feature)
+$ grep -R "kind: ManagedCertificate\|name: moodle-managed-cert\|name: moodle-ssl-cert" kubernetes/gcp-gke
+kubernetes/gcp-gke/overlays/managed-cert.yaml:kind: ManagedCertificate
+kubernetes/gcp-gke/overlays/managed-cert.yaml:  name: moodle-ssl-cert
+
+Your actual certificate resource is:
+name: moodle-ssl-cert
+
+but the deployed Ingress is looking for:
+moodle-managed-cert
+
+We need to find where moodle-managed-cert is coming from before changing anything.
+Run:
+grep -R "moodle-managed-cert" kubernetes scripts
+
+result
+ubernetes/gcp-gke/overlays/ingress.yaml:    networking.gke.io/managed-certificates: "moodle-managed-cert"
+
+ grep -R "kind: ManagedCertificate\|name: moodle-managed-cert\|name: moodle-ssl-cert" kubernetes/gcp-gke
+kubernetes/gcp-gke/overlays/managed-cert.yaml:kind: ManagedCertificate
+kubernetes/gcp-gke/overlays/managed-cert.yaml:  name: moodle-ssl-cert

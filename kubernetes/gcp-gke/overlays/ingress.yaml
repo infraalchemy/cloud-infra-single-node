@@ -4,7 +4,7 @@ metadata:
   name: moodle-ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "moodle-static-ip"
-    networking.gke.io/managed-certificates: "moodle-managed-cert"
+    networking.gke.io/managed-certificates: "moodle-ssl-cert"
     kubernetes.io/ingress.allow-http: "true"
 
 spec:
