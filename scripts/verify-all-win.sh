@@ -216,19 +216,24 @@ kubectl get ingress moodle-ingress \
   -o jsonpath='{.metadata.annotations.networking\.gke\.io/managed-certificates}{"\n"}'
 echo
 
-echo "Verify the Ingress external IP:"
-kubectl get ingress moodle-ingress
 echo
+echo -e "${BOLD_CYAN}Verify routing through the permanent static IP:${NC}"
 
-echo "Verify routing through the Terraform static IP:"
 DOMAIN="bordercolliechronicles.ca"
-STATIC_IP=$(terraform -chdir=terraform/gcp-gke output -raw static_ip_address)
-echo "Static IP: ${STATIC_IP}"
+
+STATIC_IP=$(gcloud compute addresses describe moodle-static-ip \
+  --global \
+  --project="$PROJECT_ID" \
+  --format="value(address)")
+
+echo
+echo -e "${BOLD_CYAN}Static IP: ${STATIC_IP}${NC}"
+
 curl -I \
   -H "Host: ${DOMAIN}" \
   "http://${STATIC_IP}"
-echo
 
+echo
 
 echo
 echo -e "${BOLD_CYAN}Verifying no custom Compute Engine images remain...${NC}"
