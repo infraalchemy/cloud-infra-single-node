@@ -260,12 +260,46 @@ MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
   ls -l /var/www/html/config.php
 
 echo
-echo "Verify Moodle data survived pod replacement..."
+echo -e "${BOLD_BLUE}Verify Moodle data survived pod replacement...${NC}"
 
 MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
   ls -la /moodledata
+echo
+
 
 echo
+echo -e "${BOLD_CYAN}Verifying MySQL persistence...${NC}"
+
+OLD_MYSQL_POD=$(kubectl get pods -l app=mysql \
+  -o jsonpath='{.items[0].metadata.name}')
+
+echo -e "${BOLD_BLUE}Deleting MySQL pod: ${OLD_MYSQL_POD}${NC}"
+
+kubectl delete pod "$OLD_MYSQL_POD"
+
+echo
+echo "Waiting for replacement MySQL pod..."
+
+kubectl rollout status deployment/mysql --timeout=5m
+
+NEW_MYSQL_POD=$(kubectl get pods -l app=mysql \
+  -o jsonpath='{.items[0].metadata.name}')
+
+echo -e "${BOLD_BLUE}Old MySQL pod: ${OLD_MYSQL_POD}${NC}"
+echo -e "${BOLD_BLUE}New MySQL pod: ${NEW_MYSQL_POD}${NC}"
+
+
+echo
+echo "Verifying Moodle database still exists..."
+
+MSYS_NO_PATHCONV=1 kubectl exec deployment/mysql -- \
+  mysql \
+    -u"$DB_USER" \
+    -p"$DB_PASS" \
+    -e "USE \`$DB_NAME\`; SHOW TABLES;"
+
+echo -e "${BOLD_BLUE}MySQL persistence verified.${NC}"
+
 
 echo
 echo -e "${BOLD_CYAN}11. Display Final Configuration${NC}"
@@ -276,7 +310,6 @@ MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
 echo
 
 
-echo
 echo
 echo -e "${BOLD_CYAN}12. Testing domain routing over HTTP...${NC}"
 
@@ -295,7 +328,6 @@ fi
 echo
 
 
-echo
 echo
 echo -e "${BOLD_CYAN}13. Waiting for Google-managed SSL certificate...${NC}"
 
