@@ -48,9 +48,6 @@ echo
 echo
 echo -e "${BOLD_CYAN}Verify MySQL database persistence:${NC}"
 
-echo
-echo -e "${BOLD_CYAN}Verify MySQL database persistence:${NC}"
-
 DB_USER=$(kubectl get secret mysql-secret \
   -o jsonpath='{.data.mysql-user}' | base64 -d)
 
@@ -114,7 +111,7 @@ if [[ "$MYSQL_READY" != "true" ]]; then
   exit 1
 fi
 
-echo -e "${BOLD_GREEN}MySQL is ready.${NC}"
+echo -e "${BOLD_BLUE}MySQL is ready.${NC}"
 
 echo
 echo -e "${BOLD_CYAN}Verify Moodle database still exists after pod replacement:${NC}"
@@ -211,6 +208,7 @@ curl -I \
 echo
 
 echo
+echo -e "${BOLD_CYAN}Verify managed certificate exists and name${NC}"
 echo "Managed certificate:"
 kubectl get ingress moodle-ingress \
   -o jsonpath='{.metadata.annotations.networking\.gke\.io/managed-certificates}{"\n"}'
