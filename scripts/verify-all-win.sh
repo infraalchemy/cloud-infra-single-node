@@ -129,7 +129,7 @@ kubectl exec deployment/mysql -- \
         FROM information_schema.tables
         WHERE table_schema='$DB_NAME';"
 
-echo -e "${BOLD_GREEN}MySQL persistence verified.${NC}"
+echo -e "${BOLD_CYAN}MySQL persistence verified.${NC}"
 echo
 
 echo "Verify the deployed PHP image:"
@@ -191,10 +191,26 @@ echo "Ingress class:"
 kubectl get ingress moodle-ingress \
   -o jsonpath='{.metadata.annotations.kubernetes\.io/ingress\.class}{"\n"}'
 
-echo "Static IP:"
-kubectl get ingress moodle-ingress \
-  -o jsonpath='{.metadata.annotations.kubernetes\.io/ingress\.global-static-ip-name}{"\n"}'
+echo
+echo -e "${BOLD_CYAN}Verify routing through the permanent static IP:${NC}"
 
+DOMAIN="bordercolliechronicles.ca"
+
+STATIC_IP=$(gcloud compute addresses describe moodle-static-ip \
+  --global \
+  --project="$PROJECT_ID" \
+  --format="value(address)")
+
+echo
+echo -e "${BOLD_CYAN}Static IP: ${STATIC_IP}${NC}"
+
+curl -I \
+  -H "Host: ${DOMAIN}" \
+  "http://${STATIC_IP}"
+
+echo
+
+echo
 echo "Managed certificate:"
 kubectl get ingress moodle-ingress \
   -o jsonpath='{.metadata.annotations.networking\.gke\.io/managed-certificates}{"\n"}'

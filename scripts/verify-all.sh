@@ -50,9 +50,6 @@ echo
 echo
 echo -e "${BOLD_CYAN}Verify MySQL database persistence:${NC}"
 
-echo
-echo -e "${BOLD_CYAN}Verify MySQL database persistence:${NC}"
-
 DB_USER=$(kubectl get secret mysql-secret \
   -o jsonpath='{.data.mysql-user}' | base64 -d)
 
@@ -86,8 +83,8 @@ kubectl rollout status deployment/mysql --timeout=5m
 NEW_MYSQL_POD=$(kubectl get pods -l app=mysql \
   -o jsonpath='{.items[0].metadata.name}')
 
-echo "Old MySQL pod: ${OLD_MYSQL_POD}"
-echo "New MySQL pod: ${NEW_MYSQL_POD}"
+echo -e "${BOLD_BLUE}Old MySQL pod: ${OLD_MYSQL_POD}${NC}"
+echo -e "${BOLD_BLUE}New MySQL pod: ${NEW_MYSQL_POD}${NC}"
 
 echo
 echo "Waiting for MySQL to accept connections..."
@@ -192,10 +189,14 @@ kubectl get ingress moodle-ingress
 echo
 
 echo
-echo -e "${BOLD_CYAN}Verify routing through the Terraform static IP:${NC}"
+echo -e "${BOLD_CYAN}Verify routing through the permanent static IP:${NC}"
 
 DOMAIN="bordercolliechronicles.ca"
-STATIC_IP=$(terraform -chdir=terraform/gcp-gke output -raw static_ip_address)
+
+STATIC_IP=$(gcloud compute addresses describe moodle-static-ip \
+  --global \
+  --project="$PROJECT_ID" \
+  --format="value(address)")
 
 echo
 echo -e "${BOLD_CYAN}Static IP: ${STATIC_IP}${NC}"
