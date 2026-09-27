@@ -34,11 +34,16 @@ jobs:
         with:
           project_id: civic-champion-439320-a5
 
+      - name: Install GKE auth plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin --quiet
+          gke-gcloud-auth-plugin --version
+
       - name: Verify Google Cloud authentication
         run: |
           gcloud auth list
           gcloud config get-value project
-
+          
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -115,7 +120,7 @@ jobs:
             db-password: moodlepassword
           EOF
 
-      - name: Deploy Moodle to GKE
+      - name: Deploy Kubernetes workloads to GKE
         run: |
           bash scripts/deploy-gke.sh
           

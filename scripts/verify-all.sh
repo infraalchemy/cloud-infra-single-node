@@ -50,11 +50,29 @@ echo
 echo
 echo -e "${BOLD_CYAN}Verify MySQL database persistence:${NC}"
 
+echo
+echo -e "${BOLD_CYAN}Verify MySQL database persistence:${NC}"
+
+DB_USER=$(kubectl get secret mysql-secret \
+  -o jsonpath='{.data.mysql-user}' | base64 -d)
+
+DB_PASS=$(kubectl get secret mysql-secret \
+  -o jsonpath='{.data.moodleuser-password}' | base64 -d)
+
+DB_NAME=$(kubectl get secret mysql-secret \
+  -o jsonpath='{.data.mysql-database}' | base64 -d)
+
 echo "Verify Moodle database exists before pod deletion..."
-kubectl exec deployment/mysql -- mysql \
-  -u root \
-  -p"$(kubectl get secret mysql-secret -o jsonpath='{.data.root-password}' | base64 -d)" \
-  -e "SHOW DATABASES;"
+
+kubectl exec deployment/mysql -- \
+  mysql \
+    --protocol=TCP \
+    -h 127.0.0.1 \
+    -u"$DB_USER" \
+    -p"$DB_PASS" \
+    -e "SELECT COUNT(*) AS moodle_table_count
+        FROM information_schema.tables
+        WHERE table_schema='$DB_NAME';"
 
 OLD_MYSQL_POD=$(kubectl get pods -l app=mysql \
   -o jsonpath='{.items[0].metadata.name}')
@@ -63,7 +81,7 @@ echo "Deleting MySQL pod: ${OLD_MYSQL_POD}"
 kubectl delete pod "$OLD_MYSQL_POD"
 
 echo "Waiting for replacement MySQL pod..."
-kubectl rollout status deployment/mysql --timeout=3m
+kubectl rollout status deployment/mysql --timeout=5m
 
 NEW_MYSQL_POD=$(kubectl get pods -l app=mysql \
   -o jsonpath='{.items[0].metadata.name}')
@@ -71,13 +89,50 @@ NEW_MYSQL_POD=$(kubectl get pods -l app=mysql \
 echo "Old MySQL pod: ${OLD_MYSQL_POD}"
 echo "New MySQL pod: ${NEW_MYSQL_POD}"
 
-echo -e "${BOLD_CYAN}Verify Moodle database still exists...:${NC}"
-kubectl exec deployment/mysql -- mysql \
-  -u root \
-  -p"$(kubectl get secret mysql-secret -o jsonpath='{.data.root-password}' | base64 -d)" \
-  -e "SHOW DATABASES;"
 echo
+echo "Waiting for MySQL to accept connections..."
 
+MYSQL_READY=false
+
+for attempt in {1..24}; do
+  if kubectl exec deployment/mysql -- \
+    mysqladmin ping \
+      --protocol=TCP \
+      -h 127.0.0.1 \
+      -u"$DB_USER" \
+      -p"$DB_PASS" \
+      --silent; then
+
+    MYSQL_READY=true
+    break
+  fi
+
+  echo "MySQL is not ready yet. Waiting 5 seconds... (${attempt}/24)"
+  sleep 5
+done
+
+if [[ "$MYSQL_READY" != "true" ]]; then
+  echo "ERROR: MySQL did not become ready within 2 minutes."
+  exit 1
+fi
+
+echo -e "${BOLD_GREEN}MySQL is ready.${NC}"
+
+echo
+echo -e "${BOLD_CYAN}Verify Moodle database still exists after pod replacement:${NC}"
+
+kubectl exec deployment/mysql -- \
+  mysql \
+    --protocol=TCP \
+    -h 127.0.0.1 \
+    -u"$DB_USER" \
+    -p"$DB_PASS" \
+    -e "SELECT COUNT(*) AS moodle_table_count
+        FROM information_schema.tables
+        WHERE table_schema='$DB_NAME';"
+
+echo -e "${BOLD_GREEN}MySQL persistence verified.${NC}"
+echo
 echo
 echo -e "${BOLD_CYAN}Verify the deployed PHP image:${NC}"
 kubectl get deployment php \
@@ -189,4 +244,4 @@ echo
 
 
 echo
-echo -e "${BOLD_GREEN}=== Verification Complete ===S{NC}"
+echo -e "${BOLD_GREEN}=== Verification Complete ===${NC}"
