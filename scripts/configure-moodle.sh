@@ -268,7 +268,7 @@ echo
 
 
 echo
-echo -e "${BOLD_CYAN}Verifying MySQL persistence...${NC}"
+echo -e "${BOLD_CYAN}11. Verify MySQL persistence...${NC}"
 
 OLD_MYSQL_POD=$(kubectl get pods -l app=mysql \
   -o jsonpath='{.items[0].metadata.name}')
@@ -302,7 +302,7 @@ echo -e "${BOLD_BLUE}MySQL persistence verified.${NC}"
 
 
 echo
-echo -e "${BOLD_CYAN}11. Display Final Configuration${NC}"
+echo -e "${BOLD_CYAN}12. Display Final Configuration${NC}"
 
 MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
   tail -n 20 /var/www/html/config.php
@@ -311,7 +311,7 @@ echo
 
 
 echo
-echo -e "${BOLD_CYAN}12. Testing domain routing over HTTP...${NC}"
+echo -e "${BOLD_CYAN}13. Testing domain routing over HTTP...${NC}"
 
 if curl -fsSI --max-time 15 "http://${DOMAIN_NAME}" > /dev/null; then
 
@@ -329,7 +329,7 @@ echo
 
 
 echo
-echo -e "${BOLD_CYAN}13. Waiting for Google-managed SSL certificate...${NC}"
+echo -e "${BOLD_CYAN}14. Waiting for Google-managed SSL certificate...${NC}"
 
 CERT_NAME="moodle-ssl-cert"
 MAX_ATTEMPTS=20
@@ -364,7 +364,7 @@ echo
 
 
 echo
-echo -e "${BOLD_CYAN}14. Testing final HTTPS endpoint...${NC}"
+echo -e "${BOLD_CYAN}15. Testing final HTTPS endpoint...${NC}"
 
 if [[ "$CERT_STATUS" == "Active" ]]; then
 
