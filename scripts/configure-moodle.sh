@@ -304,13 +304,9 @@ echo -e "${BOLD_BLUE}MySQL is ready.${NC}"
 echo
 echo "Verifying MySQL database still exists..."
 
-kubectl exec deployment/mysql -- \
-  mysql \
-    --protocol=TCP \
-    -h 127.0.0.1 \
-    -u"$DB_USER" \
-    -p"$DB_PASS" \
-    -e "USE \`$DB_NAME\`; SHOW TABLES;"
+-e "SELECT COUNT(*) AS moodle_table_count
+    FROM information_schema.tables
+    WHERE table_schema='$DB_NAME';"
 
 echo -e "${BOLD_BLUE}MySQL persistence verified.${NC}"
 
