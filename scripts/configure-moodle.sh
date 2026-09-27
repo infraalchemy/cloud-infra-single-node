@@ -264,16 +264,6 @@ echo
 
 
 echo
-echo -e "${BOLD_CYAN}11. Verify MySQL persistence...${NC}"
-
-OLD_MYSQL_POD=$(kubectl get pods -l app=mysql \
-  -o jsonpath='{.items[0].metadata.name}')
-
-echo -e "${BOLD_BLUE}Deleting MySQL pod: ${OLD_MYSQL_POD}${NC}"
-
-kubectl delete pod "$OLD_MYSQL_POD"
-
-echo
 echo "Waiting for replacement MySQL pod..."
 
 kubectl rollout status deployment/mysql --timeout=5m
@@ -304,11 +294,25 @@ echo -e "${BOLD_BLUE}MySQL is ready.${NC}"
 echo
 echo "Verifying MySQL database still exists..."
 
--e "SELECT COUNT(*) AS moodle_table_count
-    FROM information_schema.tables
-    WHERE table_schema='$DB_NAME';"
+kubectl exec deployment/mysql -- \
+  mysql \
+    --protocol=TCP \
+    -h 127.0.0.1 \
+    -u"$DB_USER" \
+    -p"$DB_PASS" \
+    -e "SELECT COUNT(*) AS moodle_table_count
+        FROM information_schema.tables
+        WHERE table_schema='$DB_NAME';"
 
 echo -e "${BOLD_BLUE}MySQL persistence verified.${NC}"
+
+echo
+echo -e "${BOLD_CYAN}12. Display Final Configuration${NC}"
+
+MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
+  tail -n 20 /var/www/html/config.php
+
+echo
 
 echo
 echo -e "${BOLD_CYAN}12. Display Final Configuration${NC}"
@@ -350,7 +354,7 @@ for ATTEMPT in $(seq 1 "$MAX_ATTEMPTS"); do
   echo "Certificate status: ${CERT_STATUS:-Unavailable} (${ATTEMPT}/${MAX_ATTEMPTS})"
 
   if [[ "$CERT_STATUS" == "Active" ]]; then
-    echo -e "${BOLD_GREEN}Managed certificate is Active.${NC}"
+    echo -e "${BOLD_BLUE}Managed certificate is Active.${NC}"
     break
   fi
 

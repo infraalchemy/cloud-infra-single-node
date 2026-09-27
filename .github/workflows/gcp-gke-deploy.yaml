@@ -119,8 +119,18 @@ jobs:
         run: |
           bash scripts/deploy-gke.sh
           
-      - name: Verify Moodle deployment
+      - name: Verify GKE deployment
         run: |
           kubectl get pods
           kubectl get pvc
           kubectl get ingress moodle-ingress
+          
+      - name: Create Moodle admin secret
+        run: |
+          kubectl create secret generic moodle-admin-secret \
+            --from-literal=admin-password="${{ secrets.MOODLE_ADMIN_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+            
+      - name: Install and configure Moodle
+        run: |
+          bash scripts/configure-moodle.sh
