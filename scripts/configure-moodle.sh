@@ -195,7 +195,6 @@ else
     /var/www/html/config.php
 
 fi
-
 echo
 
 echo
@@ -209,7 +208,6 @@ MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
 
 MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
   chown -R 33:33 /moodledata
-
 echo
 
 echo
@@ -228,9 +226,7 @@ echo
 
 MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
   ls -lh /var/www/html/config.php
-
 echo
-
 
 echo
 echo -e "${BOLD_CYAN}10. Verifying PHP persistence...${NC}"
@@ -288,25 +284,41 @@ NEW_MYSQL_POD=$(kubectl get pods -l app=mysql \
 echo -e "${BOLD_BLUE}Old MySQL pod: ${OLD_MYSQL_POD}${NC}"
 echo -e "${BOLD_BLUE}New MySQL pod: ${NEW_MYSQL_POD}${NC}"
 
+echo
+echo "Waiting for MySQL to accept connections..."
+
+until kubectl exec deployment/mysql -- \
+  mysqladmin ping \
+    --protocol=TCP \
+    -h 127.0.0.1 \
+    -u"$DB_USER" \
+    -p"$DB_PASS" \
+    --silent
+do
+  echo "MySQL is not ready yet. Waiting 5 seconds..."
+  sleep 5
+done
+
+echo -e "${BOLD_BLUE}MySQL is ready.${NC}"
 
 echo
-echo "Verifying Moodle database still exists..."
+echo "Verifying MySQL database still exists..."
 
-MSYS_NO_PATHCONV=1 kubectl exec deployment/mysql -- \
+kubectl exec deployment/mysql -- \
   mysql \
+    --protocol=TCP \
+    -h 127.0.0.1 \
     -u"$DB_USER" \
     -p"$DB_PASS" \
     -e "USE \`$DB_NAME\`; SHOW TABLES;"
 
 echo -e "${BOLD_BLUE}MySQL persistence verified.${NC}"
 
-
 echo
 echo -e "${BOLD_CYAN}12. Display Final Configuration${NC}"
 
 MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
   tail -n 20 /var/www/html/config.php
-
 echo
 
 
@@ -324,9 +336,7 @@ else
   echo "Check DNS, static IP, Ingress, and backend health."
 
 fi
-
 echo
-
 
 echo
 echo -e "${BOLD_CYAN}14. Waiting for Google-managed SSL certificate...${NC}"
@@ -359,7 +369,6 @@ if [[ "$CERT_STATUS" != "Active" ]]; then
   echo -e "${BOLD_BLUE}Managed certificate is still ${CERT_STATUS:-Unavailable}.${NC}"
   echo "HTTPS verification will be skipped for now."
 fi
-
 echo
 
 
@@ -386,7 +395,6 @@ else
   echo "Final URL: $FINAL_WWWROOT"
 
 fi
-
 echo
 
 
