@@ -26,13 +26,13 @@ jobs:
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: projects/1006034492977/locations/global/workloadIdentityPools/github/providers/cloud-infra-single-node
-          service_account: github-actions@civic-champion-439320-a5.iam.gserviceaccount.com
-          project_id: civic-champion-439320-a5
+          service_account: github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com
+          project_id: ${{ env.PROJECT_ID }}
     
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
         with:
-          project_id: civic-champion-439320-a5
+          project_id: ${{ env.PROJECT_ID }}
 
       - name: Install GKE auth plugin
         run: |
@@ -66,7 +66,7 @@ jobs:
       - name: Configure Artifact Registry authentication
         run: |
           gcloud auth configure-docker \
-            northamerica-northeast2-docker.pkg.dev \
+            "${REGION}-docker.pkg.dev" \
             --quiet
 
       - name: Build PHP image
@@ -86,9 +86,9 @@ jobs:
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@v3
         with:
-          cluster_name: moodle-gke-cluster
-          location: northamerica-northeast2-a
-          project_id: civic-champion-439320-a5
+          cluster_name: ${{ env.CLUSTER_NAME }}
+          location: ${{ env.CLUSTER_LOCATION }}
+          project_id: ${{ env.PROJECT_ID }}
 
       - name: Verify GKE connection
         run: |
@@ -96,32 +96,37 @@ jobs:
           kubectl get nodes
       
       - name: Create Kubernetes SQL secrets
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_MOODLE_PASSWORD: ${{ secrets.MYSQL_MOODLE_PASSWORD }}
         run: |
-          cat > kubernetes/gcp-gke/mysql/secret.yaml <<'EOF'
+          cat > kubernetes/gcp-gke/mysql/secret.yaml <<EOF
           apiVersion: v1
           kind: Secret
           metadata:
             name: mysql-secret
           type: Opaque
           stringData:
-            root-password: rootpassword
+            root-password: "${MYSQL_ROOT_PASSWORD}"
             mysql-database: moodle
             mysql-user: moodleuser
-            moodleuser-password: moodlepassword
+            moodleuser-password: "${MYSQL_MOODLE_PASSWORD}"
           EOF
 
       - name: Create Kubernetes PHP secret
+        env:
+          MYSQL_MOODLE_PASSWORD: ${{ secrets.MYSQL_MOODLE_PASSWORD }}
         run: |
-          cat > kubernetes/gcp-gke/php/secret.yaml <<'EOF'
+          cat > kubernetes/gcp-gke/php/secret.yaml <<EOF
           apiVersion: v1
           kind: Secret
           metadata:
             name: php-secret
           type: Opaque
           stringData:
-            db-password: moodlepassword
+            db-password: "${MYSQL_MOODLE_PASSWORD}"
           EOF
-
+          
       - name: Deploy Kubernetes workloads to GKE
         run: |
           bash scripts/deploy-gke.sh

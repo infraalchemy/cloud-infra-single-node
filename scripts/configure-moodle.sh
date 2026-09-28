@@ -14,7 +14,6 @@ NC='\033[0m'
 # ==============================================================================
 
 PROJECT_ID="civic-champion-439320-a5"
-LOCATION="northamerica-northeast2"
 CLUSTER_NAME="moodle-gke-cluster"
 ZONE="northamerica-northeast2-a"
 
@@ -26,6 +25,11 @@ MOODLE_SHORT_NAME="Moodle"
 
 DOMAIN_NAME="bordercolliechronicles.ca"
 FINAL_WWWROOT="https://${DOMAIN_NAME}"
+
+CERT_NAME="moodle-ssl-cert"
+MAX_ATTEMPTS=45
+WAIT_SECONDS=30
+
 
 
 echo
@@ -324,13 +328,6 @@ MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
 
 echo
 
-echo
-echo -e "${BOLD_CYAN}12. Display Final Configuration${NC}"
-
-MSYS_NO_PATHCONV=1 kubectl exec deployment/php -- \
-  tail -n 20 /var/www/html/config.php
-echo
-
 
 echo
 echo -e "${BOLD_CYAN}13. Testing domain routing over HTTP...${NC}"
@@ -351,9 +348,6 @@ echo
 echo
 echo -e "${BOLD_CYAN}14. Waiting for Google-managed SSL certificate...${NC}"
 
-CERT_NAME="moodle-ssl-cert"
-MAX_ATTEMPTS=20
-WAIT_SECONDS=30
 CERT_STATUS=""
 
 for ATTEMPT in $(seq 1 "$MAX_ATTEMPTS"); do
@@ -361,7 +355,7 @@ for ATTEMPT in $(seq 1 "$MAX_ATTEMPTS"); do
   CERT_STATUS=$(kubectl get managedcertificate "$CERT_NAME" \
     -o jsonpath='{.status.certificateStatus}' 2>/dev/null || true)
 
-  echo "Certificate status: ${CERT_STATUS:-Unavailable} (${ATTEMPT}/${MAX_ATTEMPTS})"
+  echo -e "${BOLD_BLUE}Certificate status: ${CERT_STATUS:-Unavailable} (${ATTEMPT}/${MAX_ATTEMPTS})${NC}"
 
   if [[ "$CERT_STATUS" == "Active" ]]; then
     echo -e "${BOLD_BLUE}Managed certificate is Active.${NC}"
