@@ -95,7 +95,7 @@ jobs:
           kubectl cluster-info
           kubectl get nodes
       
-      - name: Create Kubernetes secrets
+      - name: Create Kubernetes SQL secrets
         run: |
           cat > kubernetes/gcp-gke/mysql/secret.yaml <<'EOF'
           apiVersion: v1
@@ -110,6 +110,8 @@ jobs:
             moodleuser-password: moodlepassword
           EOF
 
+      - name: Create Kubernetes PHP secret
+        run: |
           cat > kubernetes/gcp-gke/php/secret.yaml <<'EOF'
           apiVersion: v1
           kind: Secret

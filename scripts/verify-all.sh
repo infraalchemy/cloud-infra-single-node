@@ -148,7 +148,8 @@ echo
 
 echo
 echo -e "${BOLD_CYAN}Verify the Moodle application files are present:${NC}"
-kubectl exec deployment/php -- ls /var/www/html
+kubectl exec deployment/php -- sh -c \
+  "ls -1 /var/www/html | awk '{printf \"%-25s\", \$0; if (NR % 3 == 0) printf \"\n\"} END {if (NR % 3 != 0) printf \"\n\"}'"
 echo
 
 
@@ -185,7 +186,8 @@ echo
 
 echo
 echo -e "${BOLD_CYAN}Verify the Ingress external IP:${NC}"
-kubectl get ingress moodle-ingress
+kubectl get ingress moodle-ingress \
+  -o jsonpath='{.metadata.annotations.kubernetes\.io/ingress\.class}{"\n"}'
 echo
 
 echo

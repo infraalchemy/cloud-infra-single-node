@@ -258,11 +258,11 @@ if gcloud artifacts repositories describe moodle-repo \
   --project="$PROJECT_ID" \
   > /dev/null 2>&1; then
 
-  echo -e "${BOLD_BLUE}WARNING: Artifact Registry repository moodle-repo still exists.${NC}"
+  echo -e "${BOLD_RED}WARNING: Artifact Registry repository moodle-repo still exists.${NC}"
 
 else
 
-  echo -e "${BOLD_GREEN}Artifact Registry repository moodle-repo has been removed.${NC}"
+  echo -e "${BOLD_BLUE}Artifact Registry repository moodle-repo has been removed.${NC}"
 
 fi
 

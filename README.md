@@ -86,32 +86,52 @@ All infrastructure provisioning and application deployments were initiated from 
 │   │       ├── kind-config.yaml          # KinD cluster and node configuration
 │   │       └── kustomization.yaml        # Kustomize configuration for KinD
 │   │
-│   └── gcp-gke/                          # Google Kubernetes Engine environment
-│       ├── storage/                      # Persistent Moodle storage
-│       │   ├── moodle-storage.yaml       # PersistentVolumeClaim definitions for Moodle data
-│       │   └── kustomization.yaml        # Kustomize configuration for GKE storage
+│   ├── gcp-gke/                          # Google Kubernetes Engine environment
+│   │   ├── storage/                      # Persistent Moodle storage
+│   │   │   ├── moodle-storage.yaml       # PersistentVolumeClaim definitions for Moodle data
+│   │   │   └── kustomization.yaml        # Kustomize configuration for GKE storage
+│   │   │
+│   │   ├── mysql/                        # MySQL database
+│   │   │   ├── deployment.yaml           # MySQL deployment definition
+│   │   │   ├── service.yaml              # Internal Kubernetes service for MySQL
+│   │   │   └── kustomization.yaml        # Kustomize configuration for GKE MySQL  
+│   │   │
+│   │   ├── php/                          # PHP-FPM Moodle application
+│   │   │   ├── deployment.yaml           # PHP-FPM application deployment
+│   │   │   ├── service.yaml              # Internal service exposing PHP-FPM
+│   │   │   └── kustomization.yaml        # Kustomize configuration for GKE PHP   
+│   │   │
+│   │   ├── nginx/                        # Nginx reverse proxy
+│   │   │   ├── configmap.yaml            # Nginx configuration
+│   │   │   ├── deployment.yaml           # Nginx reverse proxy deployment
+│   │   │   ├── service.yaml              # Internal service exposing Nginx
+│   │   │   ├── backendconfig.yaml        # GKE load balancer health-check configuration
+│   │   │   └── kustomization.yaml        # Kustomize configuration for GKE Nginx  
+│   │   │
+│   │   └── overlays/                     # GKE-level configuration
+│   │       ├── ingress.yaml              # GKE Ingress configuration for external access
+│   │       ├── kustomization.yaml        # Kustomize configuration for GKE Ingress  
+│   │       └── managed-cert.yaml         # Google-managed SSL/TLS certificate
+│   │
+│   └── local-openshift/                  # 🚀 100% Free Local OpenShift Environment
+│       ├── storage/                      # Persistent Moodle storage for OpenShift
+│       │   ├── moodle-storage.yaml       # PVC leveraging local OpenShift StorageClasses
+│       │   └── kustomization.yaml        # Storage component kustomization
 │       │
 │       ├── mysql/                        # MySQL database
-│       │   ├── deployment.yaml           # MySQL deployment definition
-│       │   ├── service.yaml              # Internal Kubernetes service for MySQL
-│       │   └── kustomization.yaml        # Kustomize configuration for GKE MySQL  
+│       │   └── kustomization.yaml        # Pulls GKE/Kind base config, modifies if needed
 │       │
 │       ├── php/                          # PHP-FPM Moodle application
-│       │   ├── deployment.yaml           # PHP-FPM application deployment
-│       │   ├── service.yaml              # Internal service exposing PHP-FPM
-│       │   └── kustomization.yaml        # Kustomize configuration for GKE PHP   
+│       │   ├── deployment-patch.yaml     # Injects the ServiceAccountName to pass SCC rules
+│       │   ├── serviceaccount.yaml       # Grants your init container execution rights
+│       │   └── kustomization.yaml        # Ties the PHP patches together
 │       │
 │       ├── nginx/                        # Nginx reverse proxy
-│       │   ├── configmap.yaml            # Nginx configuration
-│       │   ├── deployment.yaml           # Nginx reverse proxy deployment
-│       │   ├── service.yaml              # Internal service exposing Nginx
-│       │   ├── backendconfig.yaml        # GKE load balancer health-check configuration
-│       │   └── kustomization.yaml        # Kustomize configuration for GKE Nginx  
+│       │   └── kustomization.yaml        # Pulls base Nginx files
 │       │
-│       └── overlays/                     # GKE-level configuration
-│           ├── ingress.yaml              # GKE Ingress configuration for external access
-│           ├── kustomization.yaml        # Kustomize configuration for GKE Ingress  
-│           └── managed-cert.yaml         # Google-managed SSL/TLS certificate
+│       └── overlays/                     # Cluster-wide networking configuration
+│           ├── route.yaml                # OpenShift Native Route (Replaces your Ingress)
+│           └── kustomization.yaml        # Main entry point to apply the entire stack
 │
 ├── terraform/                            # Google Cloud infrastructure provisioning
 │   ├── docker-compose/                   # P1: GCP VM infrastructure for Docker Compose
@@ -234,7 +254,21 @@ Complete and validate the end-to-end GitHub Actions deployment workflow, includi
 
 ---
 
-## Phase 4 – Kubernetes Deployment on AWS
+## Phase 4 – OpenShift Local (CRC)
+
+### Goal
+
+Extend the same application architecture to Red Hat OpenShift to demonstrate platform portability and apply the Kubernetes patterns developed in the existing deployments to an enterprise Kubernetes platform.
+
+### Planned Work
+
+Deploy the application locally using OpenShift Local (CRC) and adapt the existing Kubernetes manifests to work with OpenShift Security Context Constraints (SCC), including the required ServiceAccounts for the Moodle init containers.
+
+Replace the existing Ingress configuration with OpenShift Routes for application access and TLS. The application architecture and workload separation will remain consistent, providing a foundation for a future Azure Red Hat OpenShift (ARO) deployment.
+
+---
+
+## Phase 5 – Kubernetes Deployment on AWS
 
 ### Goal
 Extend the same application architecture to AWS to demonstrate cloud portability and apply the infrastructure and Kubernetes patterns developed in GCP to a second cloud provider.

@@ -264,6 +264,16 @@ echo
 
 
 echo
+echo -e "${BOLD_CYAN}11. Verifying MYSQL persistence...${NC}"
+
+OLD_MYSQL_POD=$(kubectl get pods -l app=mysql \
+  -o jsonpath='{.items[0].metadata.name}')
+
+echo -e "${BOLD_BLUE}Deleting MySQL pod: ${OLD_MYSQL_POD}${NC}"
+
+kubectl delete pod "$OLD_MYSQL_POD"
+
+echo
 echo "Waiting for replacement MySQL pod..."
 
 kubectl rollout status deployment/mysql --timeout=5m
@@ -366,7 +376,7 @@ for ATTEMPT in $(seq 1 "$MAX_ATTEMPTS"); do
 done
 
 if [[ "$CERT_STATUS" != "Active" ]]; then
-  echo -e "${BOLD_BLUE}Managed certificate is still ${CERT_STATUS:-Unavailable}.${NC}"
+  echo -e "${BOLD_RED}Managed certificate is still ${CERT_STATUS:-Unavailable}.${NC}"
   echo "HTTPS verification will be skipped for now."
 fi
 echo
