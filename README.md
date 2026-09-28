@@ -113,7 +113,7 @@ All infrastructure provisioning and application deployments were initiated from 
 │   │       ├── kustomization.yaml        # Kustomize configuration for GKE Ingress  
 │   │       └── managed-cert.yaml         # Google-managed SSL/TLS certificate
 │   │
-│   └── local-openshift/                  # 🚀 100% Free Local OpenShift Environment
+│   └── local-openshift/                  # Local OpenShift Environment
 │       ├── storage/                      # Persistent Moodle storage for OpenShift
 │       │   ├── moodle-storage.yaml       # PVC leveraging local OpenShift StorageClasses
 │       │   └── kustomization.yaml        # Storage component kustomization
