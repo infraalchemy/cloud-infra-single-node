@@ -113,7 +113,7 @@ All infrastructure provisioning and application deployments were initiated from 
 │   │       ├── kustomization.yaml        # Kustomize configuration for GKE Ingress  
 │   │       └── managed-cert.yaml         # Google-managed SSL/TLS certificate
 │   │
-│   └── local-openshift/                  # Local OpenShift Environment
+│   └── openshift/                        # Local OpenShift Environment
 │       ├── storage/                      # Persistent Moodle storage for OpenShift
 │       │   ├── moodle-storage.yaml       # PVC leveraging local OpenShift StorageClasses
 │       │   └── kustomization.yaml        # Storage component kustomization
@@ -254,7 +254,7 @@ Complete and validate the end-to-end GitHub Actions deployment workflow, includi
 
 ---
 
-## Phase 4 – OpenShift Local (CRC)
+## Phase 4 – OpenShift(CRC)
 
 ### Goal
 

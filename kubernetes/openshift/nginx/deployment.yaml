@@ -1,0 +1,48 @@
+# nginx deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:stable # need to check for openshift
+        ports:
+        - containerPort: 80
+
+        # Nginx readiness check
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+
+        - name: moodle-code
+          mountPath: /var/www/html  
+      
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+
+      - name: moodle-code
+        persistentVolumeClaim:
+          claimName: moodle-pvc
