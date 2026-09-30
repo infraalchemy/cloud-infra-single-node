@@ -6,9 +6,4 @@ resources:
   - secret.yaml
   - deployment.yaml
   - service.yaml
-  - serviceaccount
-
-images:
-  - name: moodle-php-custom
-    newName: northamerica-northeast2-docker.pkg.dev/civic-champion-439320-a5/moodle-repo/custom-php
-    newTag: "8.2"
+  - serviceaccount.yaml
