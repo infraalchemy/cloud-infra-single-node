@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: registry.access.redhat.com/ubi9/nginx-126
+        image: nginxinc/nginx-unprivileged:stable
         ports:
         - containerPort: 8080
 
