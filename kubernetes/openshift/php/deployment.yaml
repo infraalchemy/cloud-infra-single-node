@@ -17,16 +17,12 @@ spec:
       serviceAccountName: moodle-openshift-sa
       initContainers:
         - name: init-moodle
-          image: alpine:3.19
+          image: moodle-init:8.2
           command:
             - sh
             - -c
             - |
               set -e
-
-              echo "Installing init-container tools..."
-              apk add --no-cache wget tar
-              echo "Tools installed."
 
               cd /var/www/html
 
@@ -51,14 +47,6 @@ spec:
               else
                 echo "Existing Moodle application files found. Skipping download and extraction."
               fi
-
-              echo "Setting ownership on /var/www/html..."
-              chown -R 33:33 /var/www/html
-              echo "/var/www/html ownership complete."
-
-              echo "Setting ownership on /moodledata..."
-              chown -R 33:33 /moodledata
-              echo "/moodledata ownership complete."
 
               echo "Moodle init container completed successfully."
           volumeMounts:
