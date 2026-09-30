@@ -15,9 +15,9 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:stable # need to check for openshift
+        image: registry.access.redhat.com/ubi9/nginx-126
         ports:
-        - containerPort: 80
+        - containerPort: 8080
 
         # Nginx readiness check
         readinessProbe:
