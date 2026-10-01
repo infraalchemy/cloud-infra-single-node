@@ -212,7 +212,7 @@ if [[ "$PHP_PORT" == "9000" && \
       "$PHP_ENDPOINT_PORT" == "9000" && \
       -n "$PHP_ENDPOINT" ]]; then
 
-    echo -e "${BOLD_GREEN}✓ PHP Service has an active FastCGI endpoint on port 9000.${NC}"
+    echo -e "${BOLD_BLUE}✓ PHP Service has an active FastCGI endpoint on port 9000.${NC}"
     echo "  Service:  php:${PHP_PORT}"
     echo "  Endpoint: ${PHP_ENDPOINT}:${PHP_ENDPOINT_PORT}"
 
@@ -231,16 +231,37 @@ oc get svc
 oc get endpoints
 echo
 
-echo -e "${BOLD_CYAN}Verify the OpenShift Edge Route (Replacing GKE Ingress):${NC}"
-oc get route moodle -o yaml | grep -A 5 "tls:"
+echo -e "${BOLD_CYAN}Verify the OpenShift Route (Replacing GKE Ingress):${NC}"
+oc get route moodle
 echo
 
 echo -e "${BOLD_CYAN}Verify routing through the auto-generated Sandbox Domain:${NC}"
-ROUTE_HOST=$(oc get route moodle -o jsonpath='{.spec.host}')
-echo -e "${BOLD_CYAN}Target Endpoint Host: ${ROUTE_HOST}${NC}"
 
-# Hits the OpenShift edge router directly
-curl -I "https://${ROUTE_HOST}"
+ROUTE_HOST=$(oc get route moodle -o jsonpath='{.spec.host}')
+
+if [[ -z "$ROUTE_HOST" ]]; then
+    echo -e "${BOLD_RED}✗ ERROR: OpenShift Route has no assigned host.${NC}"
+    exit 1
+fi
+
+echo -e "${BOLD_CYAN}Target Endpoint: http://${ROUTE_HOST}${NC}"
+
+if curl --fail --silent --show-error \
+    --head \
+    --max-time 15 \
+    "http://${ROUTE_HOST}"; then
+
+    echo
+    echo -e "${BOLD_BLUE}✓ OpenShift Route successfully reached Moodle through Nginx.${NC}"
+
+else
+
+    echo
+    echo -e "${BOLD_RED}✗ ERROR: Moodle could not be reached through the OpenShift Route.${NC}"
+    oc get route moodle
+    exit 1
+fi
+
 echo
 
 echo -e "${BOLD_GREEN}=== OpenShift Verification Complete ===${NC}"
