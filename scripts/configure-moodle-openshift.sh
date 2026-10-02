@@ -52,7 +52,7 @@ echo -e "${BOLD_CYAN}2. Retrieving OpenShift Route...${NC}"
 ROUTE_HOST=$(oc get route moodle \
   -o jsonpath='{.spec.host}')
 
-FINAL_WWWROOT="http://${ROUTE_HOST}"
+FINAL_WWWROOT="https://${ROUTE_HOST}"
 
 echo -e "${BOLD_BLUE}Route host: ${ROUTE_HOST}${NC}"
 echo -e "${BOLD_BLUE}Moodle URL: ${FINAL_WWWROOT}${NC}"
@@ -147,6 +147,22 @@ else
   MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
     sed -i \
     "/require_once/i \$CFG->getremoteaddrconf = 2;" \
+    /var/www/html/config.php
+
+fi
+
+if MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
+  grep -q '\$CFG->sslproxy = 1;' /var/www/html/config.php; then
+
+  echo -e "${BOLD_BLUE}sslproxy is already configured.${NC}"
+
+else
+
+  echo -e "${BOLD_BLUE}Adding sslproxy.${NC}"
+
+  MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
+    sed -i \
+    "/require_once/i \$CFG->sslproxy = 1;" \
     /var/www/html/config.php
 
 fi
@@ -271,7 +287,7 @@ MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
 echo
 
 echo
-echo -e "${BOLD_CYAN}10. Testing OpenShift Route over HTTP...${NC}"
+echo -e "${BOLD_CYAN}10. Testing OpenShift Route over HTTPS...${NC}"
 
 if curl -fsSI --max-time 15 "$FINAL_WWWROOT" > /dev/null; then
 
