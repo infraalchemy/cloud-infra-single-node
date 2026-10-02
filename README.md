@@ -175,7 +175,7 @@ Rather than treating each environment as a separate deployment, the same Moodle 
 The project covers application decomposition, containerization, Kubernetes orchestration, persistent storage, networking and ingress, infrastructure as code, cloud services, identity and security, and CI/CD automation.
 
 
-## Phase 1 – Containerized Moodle Deployment on GCP
+## Phase 1 – Docker Compose Deployment on GCP
 
 ### Goal
 Design and deploy the initial stateful application architecture on Google Cloud, establishing the container, networking, and persistence model that would become the foundation for the later Kubernetes implementations.
@@ -218,7 +218,7 @@ Phase 2 demonstrated that the architecture established with Docker Compose could
 
 ---
 
-## Phase 3 – Production-Style Kubernetes Platform on GKE
+## Phase 3 – Managed Kubernetes Deployment on GKE
 
 ### Goal
 Evolve the architecture proven in the local multi-node KinD environment into a fully integrated GKE platform. The objective was not simply to run Moodle on Kubernetes, but to carry the same stateful application architecture into Google Cloud while solving the infrastructure, storage, networking, security, recovery, and deployment requirements of a cloud Kubernetes environment.
@@ -253,27 +253,57 @@ Across the three phases, the project demonstrates system decomposition, componen
 Complete and validate the end-to-end GitHub Actions deployment workflow, including infrastructure provisioning, container image build and push, Kubernetes deployment, rollout verification, and end-to-end application validation.
 
 ---
-
-## Phase 4 – OpenShift(CRC)
+## Phase 4 – Enterprise Kubernetes Platform on Red Hat OpenShift
 
 ### Goal
+Extend the architecture proven on GKE to Red Hat OpenShift and demonstrate that the same stateful application design can be adapted across Kubernetes platforms without replacing the underlying workload architecture. The objective was to preserve the separation of Nginx, PHP-FPM, and MySQL while adapting storage, container security, image builds, networking, and application configuration to OpenShift-specific platform requirements.
 
-Extend the same application architecture to Red Hat OpenShift to demonstrate platform portability and apply the Kubernetes patterns developed in the existing deployments to an enterprise Kubernetes platform.
+The deployment was built and validated on the Red Hat Developer Sandbox, providing a managed OpenShift environment for adapting and testing the existing Kubernetes architecture. Existing GKE Kubernetes manifests were carried forward and modified only where platform differences required it, demonstrating application portability while exposing assumptions that had worked on GKE but were incompatible with OpenShift.
 
-### Planned Work
+The platform continues to use separate Nginx, PHP-FPM, and MySQL workloads, persistent application and database storage, and an init container responsible for preparing the Moodle application files. OpenShift Routes replace GKE Ingress for external application access, with edge TLS termination providing the HTTPS endpoint.
+### Result
+Built, adapted, and validated the existing Kubernetes application architecture on Red Hat OpenShift while preserving the workload and persistence model established in the earlier phases:
 
-Deploy the application locally using OpenShift Local (CRC) and adapt the existing Kubernetes manifests to work with OpenShift Security Context Constraints (SCC), including the required ServiceAccounts for the Moodle init containers.
+* **Migrated the existing Kubernetes architecture to OpenShift** – retained separate Nginx, PHP-FPM, and MySQL workloads rather than redesigning the application around an OpenShift-specific deployment model
+* **Adapted workloads to OpenShift security constraints** – removed fixed-UID and root assumptions exposed by the `restricted-v2` Security Context Constraint and validated workloads using OpenShift-assigned non-root identities
+* **Built application images natively within OpenShift** – used BuildConfigs and ImageStreams to build and manage the custom PHP-FPM and Moodle initialization images within the platform
+* **Adapted the Moodle initialization process** – replaced runtime package installation with a purpose-built init image compatible with OpenShift's restricted container security model
+* **Implemented OpenShift-compatible persistent storage** – used shared RWX storage for Moodle application files and RWO storage for Moodle data and MySQL while preserving state across pod replacement
+* **Integrated OpenShift application networking** – connected the OpenShift Route to the Nginx Service using a named service port, with Nginx listening on unprivileged port 8080
+* **Established HTTPS using OpenShift edge TLS termination** – configured the Route for TLS termination and HTTP-to-HTTPS redirection while adapting Moodle's proxy configuration for operation behind the OpenShift router
+* **Validated end-to-end application routing** – confirmed traffic traverses the OpenShift router, Nginx Service, Nginx workload, PHP-FPM service boundary, Moodle application, and MySQL database
+* **Validated workload recovery and persistent state** – deliberately deleted the PHP workload and confirmed OpenShift recreated it while preserving Moodle configuration, HTTPS configuration, application data, and database connectivity
+* **Validated database recovery** – deliberately recreated the MySQL workload and verified that the persistent database and Moodle tables remained intact
+* **Maintained repeatable Kubernetes configuration with Kustomize** – preserved the existing repository structure while isolating OpenShift-specific manifests and configuration
+* **Automated Moodle configuration and validation** – adapted the deployment tooling to retrieve OpenShift service and Route information, perform the Moodle CLI installation, configure reverse-proxy behavior, and verify persistence and external application access
 
-Replace the existing Ingress configuration with OpenShift Routes for application access and TLS. The application architecture and workload separation will remain consistent, providing a foundation for a future Azure Red Hat OpenShift (ARO) deployment.
+### Engineering Outcome
+The OpenShift implementation demonstrates that the application architecture is portable across Kubernetes distributions while also showing that portability does not mean deploying identical manifests unchanged.
+
+Moving from GKE to OpenShift exposed platform-specific differences in container security, storage behavior, image management, service routing, TLS termination, and runtime permissions. Rather than weakening OpenShift security controls or replacing the application architecture, the workloads were adapted to operate within the platform's constraints.
+
+The resulting deployment preserves the same architectural path established in the earlier phases:
+
+**OpenShift Route → Nginx → PHP-FPM → MySQL**
+
+while using OpenShift-native capabilities for image builds, routing, security enforcement, and TLS.
+
+This phase extends the project from Kubernetes deployment into **cross-platform Kubernetes engineering**: identifying platform assumptions, adapting workloads to a stricter security model, troubleshooting service and Route integration, validating persistent state through workload failure and recovery, and maintaining a repeatable architecture across local Kubernetes, GKE, and OpenShift.
+
+The OpenShift implementation also provides a practical foundation for a future Azure Red Hat OpenShift (ARO) deployment, where the same workload architecture and OpenShift-specific adaptations can be carried forward into a managed Azure environment.
 
 ---
 
-## Phase 5 – Kubernetes Deployment on AWS
+## Phase 5 – Kubernetes Deployment on Azure
 
 ### Goal
-Extend the same application architecture to AWS to demonstrate cloud portability and apply the infrastructure and Kubernetes patterns developed in GCP to a second cloud provider.
+Extend the OpenShift architecture validated in the Red Hat Developer Sandbox to Azure Red Hat OpenShift (ARO), following the same progression used when the local KinD implementation was carried forward to GKE.
+
+The objective is to preserve the existing Nginx, PHP-FPM, and MySQL architecture while moving the OpenShift implementation into Azure and adapting the infrastructure, networking, identity, persistent storage, and external application access to the managed cloud environment.
 
 ### Planned Work
-Provision AWS infrastructure with Terraform and deploy the application to Amazon EKS while integrating AWS-native identity, networking, persistent storage, load balancing, DNS, TLS, and monitoring services.
+Provision the required Azure and ARO infrastructure with Terraform and deploy the OpenShift workloads developed and validated in Phase 4.
 
-The application architecture and Kubernetes workload separation will remain consistent, allowing the AWS implementation to demonstrate how the same platform design can be adapted across cloud providers.
+Carry forward the OpenShift security, image, storage, routing, TLS, persistence, and recovery patterns established in the Developer Sandbox while integrating the Azure services required to support the deployment.
+
+As KinD provided the foundation for the GKE implementation, the Red Hat Developer Sandbox provides the OpenShift foundation for ARO, allowing the project to demonstrate both Kubernetes and OpenShift portability from development environments into managed cloud platforms.
