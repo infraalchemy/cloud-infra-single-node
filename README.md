@@ -253,7 +253,7 @@ Across the three phases, the project demonstrates system decomposition, componen
 Complete and validate the end-to-end GitHub Actions deployment workflow, including infrastructure provisioning, container image build and push, Kubernetes deployment, rollout verification, and end-to-end application validation.
 
 ---
-## Phase 4 – Enterprise Kubernetes Platform on Red Hat OpenShift
+## Phase 4 – Kubernetes Platform on Red Hat OpenShift
 
 ### Goal
 Extend the architecture proven on GKE to Red Hat OpenShift and demonstrate that the same stateful application design can be adapted across Kubernetes platforms without replacing the underlying workload architecture. The objective was to preserve the separation of Nginx, PHP-FPM, and MySQL while adapting storage, container security, image builds, networking, and application configuration to OpenShift-specific platform requirements.
@@ -294,7 +294,7 @@ The OpenShift implementation also provides a practical foundation for a future A
 
 ---
 
-## Phase 5 – Kubernetes Deployment on Azure
+## Phase 5 – Managed Kubernetes Deployment on Azure
 
 ### Goal
 Extend the OpenShift architecture validated in the Red Hat Developer Sandbox to Azure Red Hat OpenShift (ARO), following the same progression used when the local KinD implementation was carried forward to GKE.
