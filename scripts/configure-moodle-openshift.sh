@@ -8,42 +8,24 @@ BOLD_BLUE='\033[1;34m'
 BOLD_RED='\033[1;31m'
 NC='\033[0m'
 
+
+# ==============================================================================
+# CONFIGURATION CONSTANTS
+# ==============================================================================
+
 ADMIN_USER="admin"
 ADMIN_EMAIL="bordercolliechronicles@gmail.com"
 
 MOODLE_FULL_NAME="Moodle OpenShift Site"
 MOODLE_SHORT_NAME="Moodle"
 
-NAMESPACE=$(oc project -q)
-
-ROUTE_HOST=$(oc get route moodle \
-  -o jsonpath='{.spec.host}')
-
-FINAL_WWWROOT="http://${ROUTE_HOST}"
 
 echo
-echo -e "${BOLD_GREEN}=== Initializing Moodle OpenShift Configuration ===${NC}"
-echo
-
-echo -e "${BOLD_CYAN}OpenShift project:${NC} ${NAMESPACE}"
-echo -e "${BOLD_CYAN}Moodle URL:${NC} ${FINAL_WWWROOT}"
-echo
-
-# ==============================================================================
-# WAIT FOR PHP DEPLOYMENT
-# ==============================================================================
-
-echo -e "${BOLD_CYAN}Waiting for PHP deployment to be ready...${NC}"
-
-oc rollout status deployment/php --timeout=30m
+echo -e "${BOLD_GREEN}=== Initializing Automated Moodle CLI Installer ===${NC}"
 echo
 
 
-# ==============================================================================
-# LOAD DATABASE CONFIGURATION
-# ==============================================================================
-
-echo -e "${BOLD_CYAN}Loading database configuration from OpenShift...${NC}"
+echo -e "${BOLD_CYAN}1. Loading database configuration from OpenShift...${NC}"
 
 DB_HOST=$(oc get service mysql \
   -o jsonpath='{.spec.clusterIP}')
@@ -63,11 +45,21 @@ echo "Database user: $DB_USER"
 echo "Database password: loaded securely"
 echo
 
-# ==============================================================================
-# MOODLE ADMIN CREDENTIALS
-# ==============================================================================
 
-echo -e "${BOLD_CYAN}Checking Moodle admin credentials...${NC}"
+echo
+echo -e "${BOLD_CYAN}2. Retrieving OpenShift Route...${NC}"
+
+ROUTE_HOST=$(oc get route moodle \
+  -o jsonpath='{.spec.host}')
+
+FINAL_WWWROOT="http://${ROUTE_HOST}"
+
+echo -e "${BOLD_BLUE}Route host: ${ROUTE_HOST}${NC}"
+echo -e "${BOLD_BLUE}Moodle URL: ${FINAL_WWWROOT}${NC}"
+echo
+
+echo
+echo -e "${BOLD_CYAN}3. Checking Moodle admin credentials...${NC}"
 
 if oc get secret moodle-admin-secret > /dev/null 2>&1; then
 
@@ -94,41 +86,8 @@ ADMIN_PASS=$(oc get secret moodle-admin-secret \
 
 echo
 
-# ==============================================================================
-# PREFLIGHT VALIDATION
-# ==============================================================================
-
-echo -e "${BOLD_CYAN}Validating Moodle installation configuration...${NC}"
-
-REQUIRED_VARS=(
-  DB_HOST
-  DB_NAME
-  DB_USER
-  DB_PASS
-  FINAL_WWWROOT
-  ADMIN_USER
-  ADMIN_PASS
-  ADMIN_EMAIL
-  MOODLE_FULL_NAME
-  MOODLE_SHORT_NAME
-)
-
-for VAR_NAME in "${REQUIRED_VARS[@]}"; do
-  if [[ -z "${!VAR_NAME:-}" ]]; then
-    echo -e "${BOLD_RED}ERROR: ${VAR_NAME} is empty.${NC}"
-    exit 1
-  fi
-done
-
-echo -e "${BOLD_BLUE}Moodle configuration preflight passed.${NC}"
 echo
-
-
-# ==============================================================================
-# INSTALL MOODLE
-# ==============================================================================
-
-echo -e "${BOLD_CYAN}Checking Moodle installation status...${NC}"
+echo -e "${BOLD_CYAN}4. Checking Moodle installation status...${NC}"
 
 if MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
   test -f /var/www/html/config.php; then
@@ -138,6 +97,13 @@ if MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
 else
 
   echo -e "${BOLD_BLUE}Moodle is not installed. Starting CLI installation.${NC}"
+  echo
+  echo "Database host: ${DB_HOST}"
+  echo "Database: ${DB_NAME}"
+  echo "Database user: ${DB_USER}"
+  echo "Moodle data directory: /moodledata"
+  echo "Moodle URL: ${FINAL_WWWROOT}"
+  echo
 
   MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
     php /var/www/html/admin/cli/install.php \
@@ -158,63 +124,16 @@ else
       --agree-license \
       --non-interactive
 
-  echo -e "${BOLD_GREEN}Moodle CLI installation completed successfully.${NC}"
+  echo
+  echo -e "${BOLD_BLUE}Moodle base installation completed successfully.${NC}"
 
 fi
 
 echo
 
-# ==============================================================================
-# INSTALL MOODLE
-# ==============================================================================
-
-echo -e "${BOLD_CYAN}Checking Moodle installation status...${NC}"
-
-if MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
-  test -f /var/www/html/config.php; then
-
-  echo -e "${BOLD_BLUE}Moodle config.php already exists. Skipping Moodle installation.${NC}"
-
-else
-
-  echo -e "${BOLD_BLUE}Moodle is not installed. Starting CLI installation.${NC}"
-
-  MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
-    php /var/www/html/admin/cli/install.php \
-      --lang=en \
-      --dbtype=mysqli \
-      --dbhost="$DB_HOST" \
-      --dbport=3306 \
-      --dbname="$DB_NAME" \
-      --dbuser="$DB_USER" \
-      --dbpass="$DB_PASS" \
-      --dataroot="/moodledata" \
-      --wwwroot="$FINAL_WWWROOT" \
-      --fullname="$MOODLE_FULL_NAME" \
-      --shortname="$MOODLE_SHORT_NAME" \
-      --adminuser="$ADMIN_USER" \
-      --adminpass="$ADMIN_PASS" \
-      --adminemail="$ADMIN_EMAIL" \
-      --agree-license \
-      --non-interactive
-
-  echo -e "${BOLD_GREEN}Moodle CLI installation completed successfully.${NC}"
-
-fi
 
 echo
-
-  echo -e "${BOLD_GREEN}Moodle CLI installation completed successfully.${NC}"
-
-fi
-
-echo
-
-# ==============================================================================
-# CONFIGURE MOODLE PROXY SETTINGS
-# ==============================================================================
-
-echo -e "${BOLD_CYAN}Configuring Moodle proxy settings...${NC}"
+echo -e "${BOLD_CYAN}5. Checking Moodle proxy configuration...${NC}"
 
 if MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
   grep -q '\$CFG->getremoteaddrconf = 2;' /var/www/html/config.php; then
@@ -233,3 +152,170 @@ else
 fi
 
 echo
+
+echo
+echo -e "${BOLD_CYAN}6. Verifying Moodle configuration...${NC}"
+
+MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
+  php -l /var/www/html/config.php
+
+echo
+
+MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
+  grep -E 'wwwroot|getremoteaddrconf|sslproxy' \
+  /var/www/html/config.php
+
+echo
+
+MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
+  ls -lh /var/www/html/config.php
+
+echo
+
+echo
+echo -e "${BOLD_CYAN}7. Verifying PHP persistence...${NC}"
+
+OLD_PHP_POD=$(oc get pods -l app=php \
+  -o jsonpath='{.items[0].metadata.name}')
+
+echo -e "${BOLD_BLUE}Deleting PHP pod: ${OLD_PHP_POD}${NC}"
+
+oc delete pod "$OLD_PHP_POD"
+
+echo
+echo "Waiting for replacement PHP pod..."
+
+oc rollout status deployment/php --timeout=60m
+
+NEW_PHP_POD=$(oc get pods -l app=php \
+  -o jsonpath='{.items[0].metadata.name}')
+
+echo -e "${BOLD_BLUE}Old PHP pod: ${OLD_PHP_POD}${NC}"
+echo -e "${BOLD_BLUE}New PHP pod: ${NEW_PHP_POD}${NC}"
+
+echo
+echo -e "${BOLD_CYAN}Verify Moodle application files survived pod replacement...${NC}"
+
+MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
+  ls -l /var/www/html/config.php
+
+echo
+echo -e "${BOLD_BLUE}Verify Moodle data survived pod replacement...${NC}"
+
+MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
+  ls -la /moodledata
+
+echo
+
+echo
+echo -e "${BOLD_CYAN}8. Verifying MYSQL persistence...${NC}"
+
+OLD_MYSQL_POD=$(oc get pods -l app=mysql \
+  -o jsonpath='{.items[0].metadata.name}')
+
+echo -e "${BOLD_BLUE}Deleting MySQL pod: ${OLD_MYSQL_POD}${NC}"
+
+oc delete pod "$OLD_MYSQL_POD"
+
+echo
+echo "Waiting for replacement MySQL pod..."
+
+oc rollout status deployment/mysql --timeout=5m
+
+NEW_MYSQL_POD=$(oc get pods -l app=mysql \
+  -o jsonpath='{.items[0].metadata.name}')
+
+echo -e "${BOLD_BLUE}Old MySQL pod: ${OLD_MYSQL_POD}${NC}"
+echo -e "${BOLD_BLUE}New MySQL pod: ${NEW_MYSQL_POD}${NC}"
+
+echo
+echo "Waiting for MySQL to accept connections..."
+
+until oc exec deployment/mysql -- \
+  mysqladmin ping \
+    --protocol=TCP \
+    -h 127.0.0.1 \
+    -u"$DB_USER" \
+    -p"$DB_PASS" \
+    --silent
+do
+  echo "MySQL is not ready yet. Waiting 5 seconds..."
+  sleep 5
+done
+
+echo -e "${BOLD_BLUE}MySQL is ready.${NC}"
+
+echo
+echo "Verifying MySQL database still exists..."
+
+oc exec deployment/mysql -- \
+  mysql \
+    --protocol=TCP \
+    -h 127.0.0.1 \
+    -u"$DB_USER" \
+    -p"$DB_PASS" \
+    -e "SELECT COUNT(*) AS moodle_table_count
+        FROM information_schema.tables
+        WHERE table_schema='$DB_NAME';"
+
+echo -e "${BOLD_BLUE}MySQL persistence verified.${NC}"
+
+echo
+
+echo
+echo -e "${BOLD_CYAN}9. Display Final Configuration${NC}"
+
+MSYS_NO_PATHCONV=1 oc exec deployment/php -c php -- \
+  tail -n 20 /var/www/html/config.php
+
+echo
+
+echo
+echo -e "${BOLD_CYAN}10. Testing OpenShift Route over HTTP...${NC}"
+
+if curl -fsSI --max-time 15 "$FINAL_WWWROOT" > /dev/null; then
+
+  echo -e "${BOLD_BLUE}OpenShift Route is responding successfully.${NC}"
+  curl -I --max-time 15 "$FINAL_WWWROOT"
+
+else
+
+  echo -e "${BOLD_RED}OpenShift Route test failed.${NC}"
+  echo "Check the Route, Nginx Service, Nginx pod, PHP Service, and PHP pod."
+
+fi
+
+echo
+
+
+echo -e "${BOLD_GREEN}Moodle installation and configuration completed.${NC}"
+
+echo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

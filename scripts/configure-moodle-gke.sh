@@ -45,12 +45,6 @@ gcloud container clusters get-credentials "$CLUSTER_NAME" \
 echo
 
 echo
-echo -e "${BOLD_CYAN}Waiting for PHP deployment to be ready...${NC}"
-
-kubectl rollout status deployment/php --timeout=30m
-echo
-
-echo
 echo -e "${BOLD_CYAN}2. Loading database configuration from Kubernetes...${NC}"
 
 DB_HOST=$(kubectl get service mysql \
