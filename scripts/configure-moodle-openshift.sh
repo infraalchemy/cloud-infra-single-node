@@ -289,20 +289,33 @@ echo
 echo
 echo -e "${BOLD_CYAN}10. Testing OpenShift Route over HTTPS...${NC}"
 
-if curl -fsSI --max-time 15 "$FINAL_WWWROOT" > /dev/null; then
+ROUTE_READY=false
+
+for attempt in {1..12}; do
+
+  if curl -fsSI --max-time 15 "$FINAL_WWWROOT" > /dev/null; then
+    ROUTE_READY=true
+    break
+  fi
+
+  echo "Route not ready yet. Retrying in 10 seconds... ($attempt/12)"
+  sleep 10
+
+done
+
+if [ "$ROUTE_READY" = true ]; then
 
   echo -e "${BOLD_BLUE}OpenShift Route is responding successfully.${NC}"
   curl -I --max-time 15 "$FINAL_WWWROOT"
 
 else
 
-  echo -e "${BOLD_RED}OpenShift Route test failed.${NC}"
+  echo -e "${BOLD_RED}OpenShift Route test failed after waiting for the Route to become ready.${NC}"
   echo "Check the Route, Nginx Service, Nginx pod, PHP Service, and PHP pod."
 
 fi
 
 echo
-
 
 echo -e "${BOLD_GREEN}Moodle installation and configuration completed.${NC}"
 
