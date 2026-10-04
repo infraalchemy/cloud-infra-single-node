@@ -1,14 +1,9 @@
-output "cluster_name" {
-  description = "Name of the GKE cluster"
-  value       = google_container_cluster.moodle.name
+output "resource_group_name" {
+  description = "Name of the ARO resource group"
+  value       = azurerm_resource_group.aro.name
 }
 
-output "cluster_location" {
-  description = "Location of the GKE cluster"
-  value       = google_container_cluster.moodle.location
-}
-
-output "artifact_registry_repository" {
-  description = "Artifact Registry repository name"
-  value       = google_artifact_registry_repository.moodle.repository_id
+output "resource_group_location" {
+  description = "Location of the ARO resource group"
+  value       = azurerm_resource_group.aro.location
 }

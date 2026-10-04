@@ -1,19 +1,14 @@
 terraform {
-  backend "gcs" {
-    bucket = "civic-champion-439320-a5-terraform-state"
-    prefix = "gke"
-  }
+  required_version = ">= 1.5.0"
 
   required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 7.0"
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.0"
     }
   }
 }
 
-provider "google" {
-  project = var.project_id
-  region  = var.region
-  zone    = var.zone
+provider "azurerm" {
+  features {}
 }
