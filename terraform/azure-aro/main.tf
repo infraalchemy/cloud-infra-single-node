@@ -23,7 +23,7 @@ resource "azurerm_subnet" "master" {
   address_prefixes     = ["10.0.0.0/23"]
 
   service_endpoints = ["Microsoft.ContainerRegistry"]
-  
+
   # Allow ARO instead of Azure to manage Private Link Service networking within this subnet
   private_link_service_network_policies_enabled = false
 }
@@ -35,7 +35,7 @@ resource "azurerm_subnet" "worker" {
   address_prefixes     = ["10.0.2.0/23"]
 
   service_endpoints = ["Microsoft.ContainerRegistry"]
-  
+
   # Allow ARO instead of Azure to manage Private Link Service networking within this subnet
   private_link_service_network_policies_enabled = false
 }
