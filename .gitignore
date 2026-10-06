@@ -22,9 +22,11 @@ kubernetes/gcp-gke/mysql/secret.yaml
 kubernetes/gcp-gke/php/secret.yaml
 
 # Terraform
-# Terraform
 terraform/**/.terraform/
 terraform/**/*.tfvars
 terraform/**/*.tfvars.json
 terraform/**/*.tfstate
-terraform/**/*.tfstate.backup
+terraform/**/*.tfstate.*
+terraform/**/crash.log
+terraform/**/crash.*.log
+terraform/**/*.tfplan

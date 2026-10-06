@@ -14,10 +14,10 @@ spec:
       labels:
         app: php
     spec:
-      serviceAccountName: moodle-openshift-sa
+      serviceAccountName: moodle-aro-sa
       initContainers:
         - name: init-moodle
-          image: image-registry.openshift-image-registry.svc:5000/dolliebears-dev/moodle-init:8.2
+          image: moodlearoregistry.azurecr.io/moodle-init:8.2
           command:
             - sh
             - -c
@@ -56,7 +56,7 @@ spec:
               mountPath: /moodledata
       containers:
       - name: php
-        image: image-registry.openshift-image-registry.svc:5000/dolliebears-dev/custom-php:8.2
+        image: moodlearoregistry.azurecr.io/custom-php:8.2
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9000
