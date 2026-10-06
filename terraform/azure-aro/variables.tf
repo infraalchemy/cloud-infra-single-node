@@ -91,4 +91,5 @@ variable "aro_client_secret" {
 variable "aro_service_principal_object_id" {
   description = "Object ID of the ARO service principal"
   type        = string
+  default     = "a6ce3b86-02da-4251-8c61-4d8b44d6effd"
 }
