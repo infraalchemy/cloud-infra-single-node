@@ -48,6 +48,12 @@ resource "azurerm_container_registry" "aro" {
   admin_enabled       = false
 }
 
+resource "azurerm_role_assignment" "aro_acr_pull" {
+  scope                = azurerm_container_registry.aro.id
+  role_definition_name = "AcrPull"
+  principal_id         = var.aro_service_principal_object_id
+}
+
 resource "azurerm_redhat_openshift_cluster" "aro" {
   name                = var.cluster_name
   location            = azurerm_resource_group.aro.location

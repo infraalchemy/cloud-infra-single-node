@@ -87,3 +87,8 @@ variable "aro_client_secret" {
   type        = string
   sensitive   = true
 }
+
+variable "aro_service_principal_object_id" {
+  description = "Object ID of the ARO service principal"
+  type        = string
+}
