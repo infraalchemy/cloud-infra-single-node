@@ -10,6 +10,12 @@ resource "azurerm_virtual_network" "aro" {
   resource_group_name = azurerm_resource_group.aro.name
 }
 
+resource "azurerm_role_assignment" "aro_network_contributor" {
+  scope                = azurerm_virtual_network.aro.id
+  role_definition_name = "Network Contributor"
+  principal_id         = "18ee69e7-51bf-467d-9252-e9b893d6a447"
+}
+
 resource "azurerm_subnet" "master" {
   name                 = var.master_subnet_name
   resource_group_name  = azurerm_resource_group.aro.name
