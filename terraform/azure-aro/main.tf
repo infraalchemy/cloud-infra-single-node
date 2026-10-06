@@ -87,4 +87,8 @@ resource "azurerm_redhat_openshift_cluster" "aro" {
     client_id     = var.aro_client_id
     client_secret = var.aro_client_secret
   }
+
+  depends_on = [
+    azurerm_role_assignment.aro_network_contributor
+  ]
 }
