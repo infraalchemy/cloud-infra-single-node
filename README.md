@@ -4,7 +4,7 @@ Rather than using a pre-built Moodle image, the application is separated into Ng
 
 The same application architecture is progressively evolved across increasingly sophisticated deployment models:
 
-**Docker Compose on GCP → Local Multi-node KinD → Multi-node GKE → AWS/EKS (planned)**
+**Docker Compose on GCP → Local Multi-node KinD → Multi-node GKE → Openshift → ARO (planned)**
 
 Each phase builds on the previous implementation while introducing additional capabilities in orchestration, persistent state management, networking and ingress, infrastructure as code, cloud services, security, recovery validation, and deployment automation.
 
@@ -230,17 +230,22 @@ Terraform provisions the GKE and supporting Google Cloud infrastructure, while K
 ### Result
 Built, integrated, and validated an end-to-end multi-node GKE platform spanning application workloads, persistent storage, cloud networking, infrastructure automation, identity, security, and recovery:
 
-* **Designed the application architecture** – separate Nginx, PHP-FPM, and MySQL workloads with clearly defined responsibilities rather than a pre-packaged Moodle deployment
-* **Built and published a custom PHP-FPM image** – application runtime packaged and managed through Google Artifact Registry
-* **Implemented stateful Kubernetes storage** – persistent application and database storage, including shared RWX storage backed by Google Cloud Filestore
-* **Automated application initialization** – init container prepares Moodle files on shared persistent storage before application startup
-* **Validated workload recovery and data persistence** – deliberately deleted and recreated application workloads to confirm Kubernetes recovery while preserving application configuration, database state, and uploaded files
-* **Provisioned cloud infrastructure with Terraform** – GKE and supporting infrastructure defined as code for repeatable environment creation
-* **Structured Kubernetes configuration with Kustomize** – reusable base resources separated from environment-specific configuration
-* **Integrated cloud networking** – GKE Ingress, Google Cloud load balancing, and a reserved global static IP provide the external traffic path into the application
-* **Established a secure public endpoint** – custom domain, DNS configuration, and Google-managed TLS certificates provide HTTPS access
-* **Implemented Kubernetes lifecycle management** – Deployments, Services, PVCs, Secrets, ConfigMaps, health checks, rollout monitoring, and deployment validation
-* **Implemented keyless CI/CD authentication** – GitHub Actions authenticates to Google Cloud through Workload Identity Federation (OIDC), eliminating stored long-lived Google Cloud credentials
+### Result
+
+Built and validated a complete stateful application stack on a multi-node Kubernetes cluster, including:
+
+* **Multi-node cluster architecture** – separate control-plane and worker nodes, with application workloads and the Ingress controller scheduled on the worker
+* **Custom application image deployment** – built the custom PHP-FPM 8.2 image with the required Moodle PHP extensions and loaded it directly into the KinD cluster for deployment
+* **Kubernetes workload decomposition** – Nginx, PHP-FPM, and MySQL implemented as independently managed Kubernetes workloads and services
+* **Persistent storage** – persistent volumes configured for Moodle application files, Moodle data, and the MySQL database
+* **MySQL persistence validation** – database state retained across MySQL pod deletion and recreation, confirming that application data was independent of the pod lifecycle
+* **Application initialization** – init container prepares Moodle application files on persistent storage before runtime startup
+* **Configuration and secrets management** – Kubernetes ConfigMaps and Secrets separate application configuration and credentials from workloads
+* **Ingress and network routing** – external traffic routed through Kubernetes Ingress to Nginx and then internally to PHP-FPM
+* **Workload recovery validation** – pods deliberately recreated to confirm Kubernetes recovery behavior while maintaining application state
+* **End-to-end application validation** – verified web access, authentication, database connectivity, and persistent file uploads
+
+Phase 2 demonstrated that the architecture established with Docker Compose could be successfully decomposed into Kubernetes resources while maintaining application functionality and persistent state. It also established the Kubernetes architecture that would be carried forward into GKE in Phase 3.
 
 ### Engineering Outcome
 The result is more than a Moodle deployment. The same stateful application has been progressively engineered from Docker Compose, through a customized multi-node local Kubernetes cluster, and into an integrated cloud Kubernetes platform.
@@ -260,7 +265,7 @@ Extend the architecture proven on GKE to Red Hat OpenShift and demonstrate that 
 
 The deployment was built and validated on the Red Hat Developer Sandbox, providing a managed OpenShift environment for adapting and testing the existing Kubernetes architecture. Existing GKE Kubernetes manifests were carried forward and modified only where platform differences required it, demonstrating application portability while exposing assumptions that had worked on GKE but were incompatible with OpenShift.
 
-The platform continues to use separate Nginx, PHP-FPM, and MySQL workloads, persistent application and database storage, and an init container responsible for preparing the Moodle application files. OpenShift Routes replace GKE Ingress for external application access, with edge TLS termination providing the HTTPS endpoint.
+The platform continues to use separate Nginx, PHP-FPM, and MySQL workloads, persistent application and database storage, and an init container that seeds and manages the Moodle application files and `moodledata` persistent storage before the PHP-FPM workload starts. OpenShift Routes replace GKE Ingress for external application access, with edge TLS termination providing the HTTPS endpoint.
 ### Result
 Built, adapted, and validated the existing Kubernetes application architecture on Red Hat OpenShift while preserving the workload and persistence model established in the earlier phases:
 

@@ -94,6 +94,10 @@ resource "azurerm_redhat_openshift_cluster" "aro" {
     client_secret = var.aro_client_secret
   }
 
+  timeouts {
+    create = "2h"
+  }
+
   depends_on = [
     azurerm_role_assignment.aro_network_contributor
   ]

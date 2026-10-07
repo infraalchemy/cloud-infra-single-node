@@ -24,22 +24,21 @@ echo
 read -s -p "Enter Moodle database password: " MOODLE_DB_PASSWORD
 echo
 
-kubectl create secret generic mysql-secret \
+oc create secret generic mysql-secret \
   --from-literal=root-password="$MYSQL_ROOT_PASSWORD" \
   --from-literal=mysql-database="moodle" \
   --from-literal=mysql-user="moodleuser" \
   --from-literal=moodleuser-password="$MOODLE_DB_PASSWORD" \
-  --dry-run=client -o yaml | kubectl apply -f -
+  --dry-run=client -o yaml | oc apply -f -
 
-kubectl create secret generic php-secret \
+oc create secret generic php-secret \
   --from-literal=db-password="$MOODLE_DB_PASSWORD" \
-  --dry-run=client -o yaml | kubectl apply -f -
+  --dry-run=client -o yaml | oc apply -f -
 
 unset MYSQL_ROOT_PASSWORD
 unset MOODLE_DB_PASSWORD
 
 echo -e "${BOLD_BLUE}Application secrets configured.${NC}"
-
 
 echo -e "${BOLD_GREEN}=== Moodle GKE Deployment ===${NC}"
 echo
