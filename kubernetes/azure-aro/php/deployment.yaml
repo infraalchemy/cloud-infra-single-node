@@ -29,26 +29,25 @@ spec:
               if [ ! -f index.php ]; then
                 echo "Moodle files not found. Downloading Moodle..."
 
-                wget --max-redirect=5 -O moodle.tgz "https://download.moodle.org/download.php/direct/stable404/moodle-latest-404.tgz"
+                wget --max-redirect=5 -O /tmp/moodle.tgz "https://download.moodle.org/download.php/direct/stable404/moodle-latest-404.tgz"
 
                 echo "Moodle download complete."
 
-                echo "Extracting Moodle archive..."
-                tar -xzf moodle.tgz
-                echo "Moodle archive extracted."
+                echo "Extracting Moodle directly to Azure Files..."
+                tar -xzf /tmp/moodle.tgz -C /var/www/html --strip-components=1
 
-                echo "Copying Moodle application files..."
-                cp -a moodle/. .
-                echo "Moodle application files copied."
+                echo "Moodle application files extracted."
 
-                echo "Cleaning up Moodle installation files..."
-                rm -rf moodle moodle.tgz
+                echo "Cleaning up temporary archive..."
+                rm -f /tmp/moodle.tgz
+
                 echo "Moodle installation files cleaned up."
               else
                 echo "Existing Moodle application files found. Skipping download and extraction."
               fi
 
               echo "Moodle init container completed successfully."
+              
           volumeMounts:
             - name: moodle-code
               mountPath: /var/www/html
