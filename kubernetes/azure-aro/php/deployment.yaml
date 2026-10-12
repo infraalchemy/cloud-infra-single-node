@@ -1,4 +1,5 @@
-# php deployment
+
+# PHP Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,9 +16,16 @@ spec:
         app: php
     spec:
       serviceAccountName: moodle-aro-sa
+
       initContainers:
         - name: init-moodle
           image: moodlearoregistry.azurecr.io/moodle-init:8.2
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           command:
             - sh
             - -c
@@ -47,39 +55,47 @@ spec:
               fi
 
               echo "Moodle init container completed successfully."
-              
+
           volumeMounts:
             - name: moodle-code
               mountPath: /var/www/html
             - name: moodle-data
               mountPath: /moodledata
+
       containers:
-      - name: php
-        image: moodlearoregistry.azurecr.io/custom-php:8.2
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 9000
-        env:
-        - name: DB_HOST
-          value: mysql
-        - name: DB_NAME
-          value: moodle
-        - name: DB_USER
-          value: moodleuser
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: php-secret
-              key: db-password
-        volumeMounts:
-        - name: moodle-code
-          mountPath: /var/www/html
-        - name: moodle-data
-          mountPath: /moodledata
+        - name: php
+          image: moodlearoregistry.azurecr.io/custom-php:8.2
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 9000
+          env:
+            - name: DB_HOST
+              value: mysql
+            - name: DB_NAME
+              value: moodle
+            - name: DB_USER
+              value: moodleuser
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: php-secret
+                  key: db-password
+          volumeMounts:
+            - name: moodle-code
+              mountPath: /var/www/html
+            - name: moodle-data
+              mountPath: /moodledata
+
       volumes:
-      - name: moodle-code
-        persistentVolumeClaim:
-          claimName: moodle-pvc
-      - name: moodle-data
-        persistentVolumeClaim:
-          claimName: moodledata-pvc
+        - name: moodle-code
+          persistentVolumeClaim:
+            claimName: moodle-pvc
+        - name: moodle-data
+          persistentVolumeClaim:
+            claimName: moodledata-pvc
