@@ -85,7 +85,7 @@ All infrastructure provisioning and application deployments were initiated from 
 │   │       ├── ingress.yaml              # Local ingress configuration
 │   │       ├── kind-config.yaml          # KinD cluster and node configuration
 │   │       └── kustomization.yaml        # Kustomize configuration for KinD
-│   │
+│   │ 
 │   ├── gcp-gke/                          # Google Kubernetes Engine environment
 │   │   ├── storage/                      # Persistent Moodle storage
 │   │   │   ├── moodle-storage.yaml       # PersistentVolumeClaim definitions for Moodle data
@@ -113,27 +113,48 @@ All infrastructure provisioning and application deployments were initiated from 
 │   │       ├── kustomization.yaml        # Kustomize configuration for GKE Ingress  
 │   │       └── managed-cert.yaml         # Google-managed SSL/TLS certificate
 │   │
-│   └── openshift/                        # Local OpenShift Environment
-│       ├── storage/                      # Persistent Moodle storage for OpenShift
-│       │   ├── moodle-storage.yaml       # PVC leveraging local OpenShift StorageClasses
-│       │   └── kustomization.yaml        # Storage component kustomization
-│       │
-│       ├── mysql/                        # MySQL database
-│       │   └── kustomization.yaml        # Pulls GKE/Kind base config, modifies if needed
-│       │
-│       ├── php/                          # PHP-FPM Moodle application
-│       │   ├── deployment-patch.yaml     # Injects the ServiceAccountName to pass SCC rules
-│       │   ├── serviceaccount.yaml       # Grants your init container execution rights
-│       │   └── kustomization.yaml        # Ties the PHP patches together
-│       │
-│       ├── nginx/                        # Nginx reverse proxy
-│       │   └── kustomization.yaml        # Pulls base Nginx files
-│       │
-│       └── overlays/                     # Cluster-wide networking configuration
-│           ├── route.yaml                # OpenShift Native Route (Replaces your Ingress)
-│           └── kustomization.yaml        # Main entry point to apply the entire stack
+│   ├── openshift/                        # Local OpenShift Environment
+│   │    ├── storage/                      # Persistent Moodle storage for OpenShift
+│   │    │   ├── moodle-storage.yaml       # PVC leveraging local OpenShift StorageClasses
+│   │    │   └── kustomization.yaml        # Storage component kustomization
+│   │    │
+│   │    ├── mysql/                        # MySQL database
+│   │    │   └── kustomization.yaml        # Pulls GKE/Kind base config, modifies if needed
+│   │    │
+│   │    ├── php/                          # PHP-FPM Moodle application
+│   │    │   ├── deployment-patch.yaml     # Injects the ServiceAccountName to pass SCC rules
+│   │    │   ├── serviceaccount.yaml       # Grants your init container execution rights
+│   │    │   └── kustomization.yaml        # Ties the PHP patches together
+│   │    │
+│   │    ├── nginx/                        # Nginx reverse proxy
+│   │    │   └── kustomization.yaml        # Pulls base Nginx files
+│   │    │
+│   │    └── overlays/                     # Cluster-wide networking configuration
+│   │
+│   └── azure-aro/                         # P5: Azure Red Hat OpenShift deployment
+│        ├── kustomization.yaml            # Base Kustomize configuration
+│        ├── images/                       # Dockerfile for Moodle initialization image
+│        │
+│        ├── storage/                      # Persistent Moodle storage for OpenShift
+│        │   ├── moodle-storage.yaml       # Azure-backed persistent storage for Moodle and MySQL
+│        │   └── kustomization.yaml        # Storage component kustomization
+│        │ 
+│        ├── mysql/                        # MySQL database
+│        ├── deployment.yaml               # MySQL deployment
+│        │   └── service.yaml              # Internal MySQL service
+│        │
+│        ├── php/                          # PHP-FPM Moodle application
+│        │   ├── deployment.yaml           # PHP-FPM deployment and Moodle initialization
+│        │   └── service.yaml              # Internal PHP-FPM service
+│        │
+│        ├── nginx/                        # Nginx reverse proxy
+│        │   ├── configmap.yaml            # Nginx configuration
+│        │   ├── deployment.yaml           # Nginx deployment
+│        │   └── service.yaml              # Internal Nginx service
+│        │
+│        └── overlays/                     # ARO-specific configuration
 │
-├── terraform/                            # Google Cloud infrastructure provisioning
+├── terraform/                            # Google Cloud and Azure infrastructure provisioning
 │   ├── docker-compose/                   # P1: GCP VM infrastructure for Docker Compose
 │   │   ├── deploy.sh                     # P1 deployment script
 │   │   ├── main.tf                       # Compute Engine and firewall resources
@@ -142,11 +163,18 @@ All infrastructure provisioning and application deployments were initiated from 
 │   │   ├── startup.sh                    # VM startup and application deployment
 │   │   └── variables.tf                  # P1 Terraform variables
 │   │
-│   └── gcp-gke/                          # P3: GCP infrastructure for GKE
-│       ├── main.tf                       # GKE, Artifact Registry, static IP, and APIs
-│       ├── outputs.tf                    # GKE infrastructure outputs
-│       ├── providers.tf                  # Google provider configuration
-│       └── variables.tf                  # GCP project, region, and zone variables
+│   ├── gcp-gke/                          # P3: GCP infrastructure for GKE
+│   │   ├── main.tf                       # GKE, Artifact Registry, static IP, and APIs
+│   │   ├── outputs.tf                    # GKE infrastructure outputs
+│   │   ├── providers.tf                  # Google provider configuration
+│   │   └── variables.tf                  # GCP project, region, and zone variables
+│   │
+│   └── azure-aro/                        # P5: Azure Red Hat OpenShift infrastructure
+│       ├── main.tf                       # ARO cluster, networking, and Azure resources
+│       ├── outputs.tf                    # Azure infrastructure outputs
+│       ├── providers.tf                  # Azure provider configuration
+│       └── variables.tf                  # ARO cluster and Azure configuration variables
+│
 ├── Dockerfile                            # Root Moodle application image build
 ├── README.md                             # Project overview and deployment documentation
 └── .gitignore                            # Git ignore rules
@@ -299,16 +327,44 @@ The OpenShift implementation also provides a practical foundation for a future A
 
 ---
 
-## Phase 5 – Managed Kubernetes Deployment on Azure
+## Phase 5 – Azure Red Hat OpenShift (ARO)
 
 ### Goal
-Extend the OpenShift architecture validated in the Red Hat Developer Sandbox to Azure Red Hat OpenShift (ARO), following the same progression used when the local KinD implementation was carried forward to GKE.
+Extend the OpenShift architecture validated in Phase 4 to Azure Red Hat OpenShift (ARO), demonstrating how the existing stateful Kubernetes application can be deployed into an Azure-managed OpenShift environment without redesigning the underlying workload architecture.
 
-The objective is to preserve the existing Nginx, PHP-FPM, and MySQL architecture while moving the OpenShift implementation into Azure and adapting the infrastructure, networking, identity, persistent storage, and external application access to the managed cloud environment.
+The objective was to preserve the separation of Nginx, PHP-FPM, and MySQL while integrating Azure infrastructure provisioning, container image management, persistent storage, networking, and OpenShift application deployment.
 
-### Planned Work
-Provision the required Azure and ARO infrastructure with Terraform and deploy the OpenShift workloads developed and validated in Phase 4.
+Terraform was introduced to provision the ARO infrastructure, while Azure Container Registry replaced OpenShift ImageStreams as the source for custom application images. The existing Kubernetes manifests were adapted for Azure-specific storage and registry requirements, retaining the OpenShift deployment model established in the Developer Sandbox.
 
-Carry forward the OpenShift security, image, storage, routing, TLS, persistence, and recovery patterns established in the Developer Sandbox while integrating the Azure services required to support the deployment.
+### Result
+Provisioned and deployed the existing Moodle application architecture on Azure Red Hat OpenShift, extending the OpenShift implementation into an Azure-managed environment:
 
-As KinD provided the foundation for the GKE implementation, the Red Hat Developer Sandbox provides the OpenShift foundation for ARO, allowing the project to demonstrate both Kubernetes and OpenShift portability from development environments into managed cloud platforms.
+* **Provisioned ARO infrastructure using Terraform** – configured the Azure resource group, virtual networking, subnets, and managed OpenShift cluster in Central US, using the available regional vCPU quota
+* **Configured Azure service principal authentication** – established the identities and Azure permissions required for ARO provisioning, including resource-provider access to the virtual network
+* **Integrated Azure Container Registry (ACR)** – built the custom PHP-FPM and Moodle initialization images from their Dockerfiles and published them to ACR for deployment into ARO
+* **Configured private container image access** – established registry pull permissions and OpenShift image-pull credentials to allow application workloads to retrieve images from ACR
+* **Adapted persistent storage to Azure** – configured Azure File CSI storage for shared Moodle application files and Azure Disk CSI storage for Moodle data and MySQL, preserving the existing RWX and RWO storage requirements
+* **Preserved the existing OpenShift workload architecture** – deployed separate MySQL, PHP-FPM, and Nginx workloads using Kustomize, retaining the Moodle initialization container and internal service communication
+* **Integrated OpenShift application networking** – retained OpenShift Routes for external application access, with Nginx operating on an unprivileged port
+* **Managed application credentials through Kubernetes Secrets** – separated database and application credentials from version-controlled deployment manifests
+* **Troubleshot Azure-specific deployment dependencies** – resolved infrastructure provisioning permissions, persistent storage configuration, registry authentication, and missing Kubernetes Secrets
+* **Validated application deployment and persistence** – confirmed the Moodle application was operational on ARO and that persistent application data survived workload replacement
+* **Investigated OpenShift container security behavior** – identified PHP-FPM and MySQL running as root despite the non-root behavior observed in the Developer Sandbox, prompting further investigation into namespace selection, deployment permissions, and SCC enforcement
+* **Managed infrastructure lifecycle and cloud costs** – used Terraform to provision and remove the ARO environment, with additional state reconciliation required when cluster provisioning completed after a Terraform timeout
+
+### Engineering Outcome
+The Azure Red Hat OpenShift implementation demonstrates that the application architecture developed across Docker Compose, KinD, GKE, and the OpenShift Developer Sandbox can be carried forward into a managed Azure environment while preserving the separation of application workloads and persistent storage.
+
+Moving from the Developer Sandbox to ARO introduced additional infrastructure responsibilities, including Azure resource provisioning, service principal permissions, container registry authentication, and Azure-backed storage. These differences required changes to the supporting infrastructure and deployment configuration rather than a redesign of the Moodle application.
+
+The deployment retained the established application path:
+
+**OpenShift Route → Nginx → PHP-FPM → MySQL**
+
+while integrating Azure-native infrastructure and container image services with OpenShift application orchestration.
+
+The deployment also exposed a container security difference requiring further validation. Although the application was operational and persistent storage was functioning, PHP-FPM and MySQL were observed running as root. A dedicated OpenShift project and stricter deployment security configuration were identified for subsequent validation rather than treating the working deployment as fully compliant with the intended non-root security model.
+
+This phase extends the project into **multi-cloud Kubernetes infrastructure engineering**: provisioning managed OpenShift infrastructure through Terraform, integrating external container registries, adapting persistent storage to cloud-provider capabilities, troubleshooting infrastructure and application dependencies, and managing the lifecycle of a resource-intensive cloud environment.
+
+Together, the five phases demonstrate the progression from containerized application deployment to portable Kubernetes architecture, OpenShift platform adaptation, and managed infrastructure provisioning across Google Cloud and Microsoft Azure.
