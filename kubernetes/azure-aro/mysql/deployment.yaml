@@ -17,12 +17,12 @@ spec:
       containers:
         - name: mysql
           image: mysql:8.0
-          securityContext:
-            runAsNonRoot: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
+#          securityContext:
+#            runAsNonRoot: true
+#            allowPrivilegeEscalation: false
+#            capabilities:
+#              drop:
+#                - ALL
           ports:
             - containerPort: 3306
           env:
