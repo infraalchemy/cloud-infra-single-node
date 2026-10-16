@@ -32,15 +32,15 @@ All infrastructure provisioning and application deployments were initiated from 
 ```text
 ├── .github/
 │   └── workflows/
-│       ├── gcp-gke-deploy.yaml          # GCP/GKE CI/CD deployment workflow
-│       └── aws-eks-deploy.yaml          # AWS/EKS CI/CD deployment workflow (in development)
+│       ├── gcp-gke-deploy.yaml           # GCP/GKE CI/CD deployment workflow
+│       └── azure-aro-deploy.yaml         # AWS/EKS CI/CD deployment workflow (in development)
 │
 ├── scripts/
-│   ├── deploy-gke.sh                    # GKE application deployment orchestration
-│   ├── deploy-infra.sh                  # Infrastructure deployment automation
-│   ├── destroy-all.sh                   # Environment teardown automation
-│   ├── verify-all.sh                    # Linux deployment validation
-│   └── verify-all-win.sh                # Windows deployment validation
+│   ├── deploy-gke.sh                     # GKE application deployment orchestration
+│   ├── deploy-infra.sh                   # Infrastructure deployment automation
+│   ├── destroy-all.sh                    # Environment teardown automation
+│   ├── verify-all.sh                     # Linux deployment validation
+│   └── verify-all-win.sh                 # Windows deployment validation
 │
 ├── docs/                                 # Engineering documentation
 │   ├── gcp_terraform_deploy.md           # GCP VM/infrastructure provisioning guide
@@ -114,6 +114,9 @@ All infrastructure provisioning and application deployments were initiated from 
 │   │       └── managed-cert.yaml         # Google-managed SSL/TLS certificate
 │   │
 │   ├── openshift/                        # Local OpenShift Environment
+│   │    ├── kustomization.yaml           # Base Kustomize configuration
+│   │    ├── images/                      # Dockerfile for Moodle initialization image
+│   │    │
 │   │    ├── storage/                     # Persistent Moodle storage for OpenShift
 │   │    │   ├── moodle-storage.yaml      # PVC leveraging OpenShift StorageClasses
 │   │    │   └── kustomization.yaml       # Storage component kustomization
@@ -204,6 +207,8 @@ To keep the repository organized, deployment guides and troubleshooting notes ar
 * 📄 **[P2 Kubernetes Deployment Guide](./docs/p2_k8_deploy.md)**
 * 📄 **[P2 Kubernetes Post-Mortem](./docs/p2_post_mortem.md)**
 * 📄 **[P3 GKE Deployment Guide](./docs/p3_k8_deploy.md)**
+* 📄 **[P5 Azure ARO Deployment Guide](./docs/p5_k8_deploy.md)**
+* 📄 **[P5 Azure ARO Post-Mortem](./docs/p5_post_mortem.md)**
 
 ---
 
