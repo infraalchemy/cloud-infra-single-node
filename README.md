@@ -114,54 +114,67 @@ All infrastructure provisioning and application deployments were initiated from 
 │   │       └── managed-cert.yaml         # Google-managed SSL/TLS certificate
 │   │
 │   ├── openshift/                        # Local OpenShift Environment
-│   │    ├── storage/                      # Persistent Moodle storage for OpenShift
-│   │    │   ├── moodle-storage.yaml       # PVC leveraging local OpenShift StorageClasses
-│   │    │   └── kustomization.yaml        # Storage component kustomization
+│   │    ├── storage/                     # Persistent Moodle storage for OpenShift
+│   │    │   ├── moodle-storage.yaml      # PVC leveraging OpenShift StorageClasses
+│   │    │   └── kustomization.yaml       # Storage component kustomization
 │   │    │
-│   │    ├── mysql/                        # MySQL database
-│   │    │   └── kustomization.yaml        # Pulls GKE/Kind base config, modifies if needed
+│   │    ├── mysql/                       # MySQL database
+│   │    │   ├── deployment.yaml          # MySQL deployment
+│   │    │   ├── service.yaml             # Internal MySQL service
+│   │    │   └── kustomization.yaml       # MySQL component kustomization
 │   │    │
-│   │    ├── php/                          # PHP-FPM Moodle application
-│   │    │   ├── deployment-patch.yaml     # Injects the ServiceAccountName to pass SCC rules
-│   │    │   ├── serviceaccount.yaml       # Grants your init container execution rights
-│   │    │   └── kustomization.yaml        # Ties the PHP patches together
+│   │    ├── php/                         # PHP-FPM Moodle application
+│   │    │   ├── deployment-patch.yaml    # Injects the ServiceAccountName to pass SCC rules
+│   │    │   ├── serviceaccount.yaml      # Grants your init container execution rights
+│   │    │   ├── service.yaml             # Internal PHP service
+│   │    │   └── kustomization.yaml       # PHP component kustomization
 │   │    │
-│   │    ├── nginx/                        # Nginx reverse proxy
-│   │    │   └── kustomization.yaml        # Pulls base Nginx files
+│   │    ├── nginx/                       # Nginx reverse proxy
+│   │    │   ├── configmap.yaml           # Nginx configuration
+│   │    │   ├── deployment.yaml          # Nginx deployment
+│   │    │   ├── service.yaml             # Internal Nginx service
+│   │    │   └── kustomization.yaml       # Pulls base Nginx files
 │   │    │
-│   │    └── overlays/                     # Cluster-wide networking configuration
+│   │    └── overlays/                    # Cluster-wide networking configuration
+│   │        ├── route.yaml               # OpenShift Route for external HTTPS access to Nginx
+│   │        └── kustomization.yaml       # Route component kustomizati
 │   │
-│   └── azure-aro/                         # P5: Azure Red Hat OpenShift deployment
-│        ├── kustomization.yaml            # Base Kustomize configuration
-│        ├── images/                       # Dockerfile for Moodle initialization image
+│   └── azure-aro/                        # P5: Azure Red Hat OpenShift deployment
+│        ├── kustomization.yaml           # Base Kustomize configuration
+│        ├── images/                      # Dockerfile for Moodle initialization image
 │        │
-│        ├── storage/                      # Persistent Moodle storage for OpenShift
-│        │   ├── moodle-storage.yaml       # Azure-backed persistent storage for Moodle and MySQL
-│        │   └── kustomization.yaml        # Storage component kustomization
+│        ├── storage/                     # Persistent Moodle storage for OpenShift
+│        │   ├── moodle-storage.yaml      # Azure-backed persistent storage for Moodle and MySQL
+│        │   └── kustomization.yaml       # Storage component kustomization
 │        │ 
-│        ├── mysql/                        # MySQL database
-│        ├── deployment.yaml               # MySQL deployment
-│        │   └── service.yaml              # Internal MySQL service
+│        ├── mysql/                       # MySQL database
+│        │   ├── deployment.yaml          # MySQL deployment
+│        │   ├── service.yaml             # Internal MySQL service
+│        │   └── kustomization.yaml       # MySQL component kustomization
 │        │
-│        ├── php/                          # PHP-FPM Moodle application
-│        │   ├── deployment.yaml           # PHP-FPM deployment and Moodle initialization
-│        │   └── service.yaml              # Internal PHP-FPM service
+│        ├── php/                         # PHP-FPM Moodle application
+│        │   ├── deployment.yaml          # PHP-FPM deployment and Moodle initialization
+│        │   ├── service.yaml             # Internal PHP-FPM service
+│        │   └── kustomization.yaml       # PHP component kustomization
 │        │
-│        ├── nginx/                        # Nginx reverse proxy
-│        │   ├── configmap.yaml            # Nginx configuration
-│        │   ├── deployment.yaml           # Nginx deployment
-│        │   └── service.yaml              # Internal Nginx service
+│        ├── nginx/                       # Nginx reverse proxy
+│        │   ├── configmap.yaml           # Nginx configuration
+│        │   ├── deployment.yaml          # Nginx deployment
+│        │   ├── service.yaml             # Internal Nginx service
+│        │   └── kustomization.yaml       # Nginx component kustomization
 │        │
-│        └── overlays/                     # ARO-specific configuration
+│        └── overlays/                    # ARO-specific configuration
+│            ├── route.yaml               # OpenShift Route for external HTTPS access to Nginx
+│            └── kustomization.yaml       # Route component kustomization
 │
 ├── terraform/                            # Google Cloud and Azure infrastructure provisioning
 │   ├── docker-compose/                   # P1: GCP VM infrastructure for Docker Compose
-│   │   ├── deploy.sh                     # P1 deployment script
+│   │   ├── deploy.sh                     # Docker deployment script
 │   │   ├── main.tf                       # Compute Engine and firewall resources
-│   │   ├── outputs.tf                    # P1 Terraform outputs
+│   │   ├── outputs.tf                    # Terraform outputs
 │   │   ├── providers.tf                  # Google provider configuration
 │   │   ├── startup.sh                    # VM startup and application deployment
-│   │   └── variables.tf                  # P1 Terraform variables
+│   │   └── variables.tf                  # Terraform variables
 │   │
 │   ├── gcp-gke/                          # P3: GCP infrastructure for GKE
 │   │   ├── main.tf                       # GKE, Artifact Registry, static IP, and APIs
@@ -175,7 +188,7 @@ All infrastructure provisioning and application deployments were initiated from 
 │       ├── providers.tf                  # Azure provider configuration
 │       └── variables.tf                  # ARO cluster and Azure configuration variables
 │
-├── Dockerfile                            # Root Moodle application image build
+├── Dockerfile                            # Root custom PHP application image build
 ├── README.md                             # Project overview and deployment documentation
 └── .gitignore                            # Git ignore rules
 ```

@@ -3,6 +3,7 @@ kind: Route
 metadata:
   name: moodle
 spec:
+  host: moodle.yourdomain.com
   to:
     kind: Service
     name: nginx
